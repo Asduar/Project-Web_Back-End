@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROJECT-UTS</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="user-profile">
+                <div class="avatar">A</div>
+                <h3>Anggota 1</h3>
+            </div>
+            
+            <nav class="folder-nav">
+                <h4>Folders <button id="addFolderBtn">+</button></h4>
+                <ul id="folderList">
+                    <li class="active">Tugas Kuliah</li>
+                    <li>Proyek Pribadi</li>
+                </ul>
+            </nav>
+
+            <div class="tags-nav">
+                <h4>Labels <button id="addTagBtn">+</button></h4>
+                <div id="tagList">
+                    <span class="tag urgent">Urgent</span>
+                    <span class="tag review">Review</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <h1 id="currentFolderTitle">Tugas Kuliah</h1>
+                <div class="collaborators">
+                    <div class="avatar-sm">U2</div>
+                    <div class="avatar-sm">U3</div>
+                    <button class="share-btn">Share</button>
+                </div>
+            </header>
+
+            <div class="filters">
+                <input type="text" id="searchInput" placeholder="Cari catatan...">
+                <select id="statusFilter">
+                    <option value="all">Semua Status</option>
+                    <option value="pending">Belum Selesai</option>
+                    <option value="completed">Selesai</option>
+                </select>
+                <button id="addNoteBtn" class="primary-btn">+ Catatan Baru</button>
+            </div>
+
+            <div class="notes-grid" id="notesContainer">
+                </div>
+
+            <div class="pagination">
+                <button title="Halaman Sebelumnya">&lt;</button>
+                <span>1 / 3</span>
+                <button title="Halaman Selanjutnya">&gt;</button>
+            </div>
+
+            <div id="noteModal" class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Buat Catatan Baru</h2>
+                        <button class="close-modal" id="closeModalBtn">&times;</button>
+                    </div>
+                    
+                    <form id="noteForm">
+                        <div class="form-group">
+                            <label for="noteTitle">Judul Tugas</label>
+                            <input type="text" id="noteTitle" placeholder="Misal: Selesaikan API Users" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="noteDesc">Deskripsi (Opsional)</label>
+                            <textarea id="noteDesc" rows="3" placeholder="Tambahkan detail tugas..."></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="noteDate">Tenggat Waktu</label>
+                                <input type="date" id="noteDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="noteTag">Pilih Label</label>
+                                <select id="noteTag">
+                                    <option value="urgent">Urgent</option>
+                                    <option value="review">Review</option>
+                                    <option value="normal">Normal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="button" class="btn-secondary" id="cancelNoteBtn">Batal</button>
+                            <button type="submit" class="btn-primary">Simpan Catatan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
