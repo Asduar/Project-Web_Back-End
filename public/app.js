@@ -1,49 +1,91 @@
-// Menunggu sampai seluruh HTML selesai dimuat
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Dashboard siap! Memulai inisialisasi aplikasi...");
+    console.log("Dashboard siap! Memulai koneksi ke API Server...");
+    const API_URL = '/api/notes';
 
-    // ==========================================
-    // 1. DATA TIRUAN (Dummy Data)
-    // ==========================================
-    let notesData = [
-        { 
-            id: 1, 
-            title: "Selesaikan UI Back-End", 
-            description: "Mengerjakan struktur HTML dan CSS untuk tugas web.", 
-            dueDate: "2026-05-02", 
-            tag: "urgent", 
-            status: "pending" 
-        },
-        { 
-            id: 2, 
-            title: "Pelajari Routing Node.js", 
-            description: "Membaca dokumentasi Express JS agar siap bantu tim.", 
-            dueDate: "2026-04-28", 
-            tag: "review", 
-            status: "completed" 
-        },
-        { 
-            id: 3, 
-            title: "Rapat Pembagian Tugas", 
-            description: "Diskusi via Google Meet dengan Anggota 2, 3, dan 4.", 
-            dueDate: "2026-04-25", 
-            tag: "normal", 
-            status: "pending" 
+    async function fetchNotes() {
+        try {
+            const searchInput = document.getElementById('searchInput').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let url = API_URL;
+            const queryParams = [];
+            if (searchInput) queryParams.push(`search=${encodeURIComponent(searchInput)}`);
+            if (statusFilter && statusFilter !== 'all') queryParams.push(`status=${statusFilter}`);
+            
+            if (queryParams.length > 0) {
+                url += `?${queryParams.join('&')}`;
+            }
+
+            const response = await fetch(url);
+            const result = await response.json();
+
+            if (result.success) {
+                renderNotes(result.data);
+            } else {
+                console.error("Gagal mengambil data:", result.message);
+            }
+        } catch (error) {
+            console.error("Terjadi kesalahan jaringan:", error);
         }
-    ];
+    }
 
-    // ==========================================
-    // 2. FUNGSI RENDER TAMPILAN (Kartu Catatan)
-    // ==========================================
+    async function createNote(newNote) {
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newNote)
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                fetchNotes();
+            }
+        } catch (error) {
+            console.error("Gagal menambah catatan:", error);
+        }
+    }
+
+    async function updateNoteStatus(id, newStatus) {
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                fetchNotes();
+            }
+        } catch (error) {
+            console.error("Gagal mengupdate status:", error);
+        }
+    }
+
+    async function deleteNote(id) {
+        try {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                fetchNotes();
+            }
+        } catch (error) {
+            console.error("Gagal menghapus catatan:", error);
+        }
+    }
+
     function renderNotes(notesToRender) {
         const container = document.getElementById('notesContainer');
-        container.innerHTML = ''; // Kosongkan layar dulu
+        container.innerHTML = ''; 
 
         if (notesToRender.length === 0) {
             container.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #5e6c84;">
                     <h3>Tidak ada catatan yang ditemukan.</h3>
-                    <p>Coba gunakan kata kunci pencarian yang lain.</p>
                 </div>`;
             return;
         }
@@ -56,102 +98,59 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleStyle = note.status === 'completed' ? 'text-decoration: line-through; color: #a5adba;' : '';
 
             noteCard.innerHTML = `
-                <div class="note-header">
-                    <input type="checkbox" class="note-check" data-id="${note.id}" ${isChecked}>
-                    <h3 style="${titleStyle}">${note.title}</h3>
+                <div class="note-header" style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="checkbox" class="note-check" data-id="${note.id}" ${isChecked}>
+                        <h3 style="${titleStyle}; margin: 0;">${note.title}</h3>
+                    </div>
+                    <button class="delete-btn" data-id="${note.id}" style="background: none; border: none; color: #ff5630; cursor: pointer; font-weight: bold;">X</button>
                 </div>
                 <p>${note.description}</p>
                 <div class="note-footer">
                     <span class="tag ${note.tag}">${note.tag.toUpperCase()}</span>
-                    <span class="date">${formatDate(note.dueDate)}</span>
+                    <span class="date">${note.dueDate}</span>
                 </div>
             `;
             container.appendChild(noteCard);
         });
 
-        // Pasang pendengar klik untuk checkbox
-        attachCheckboxListeners();
+        attachCardListeners();
     }
 
-    function formatDate(dateString) {
-        const options = { day: 'numeric', month: 'long', year: 'numeric' };
-        return new Date(dateString).toLocaleDateString('id-ID', options);
-    }
-
-    function attachCheckboxListeners() {
-        const checkboxes = document.querySelectorAll('.note-check');
-        checkboxes.forEach(box => {
+    function attachCardListeners() {
+        document.querySelectorAll('.note-check').forEach(box => {
             box.addEventListener('change', (e) => {
                 const noteId = parseInt(e.target.getAttribute('data-id'));
-                const isDone = e.target.checked;
-                
-                const noteIndex = notesData.findIndex(n => n.id === noteId);
-                if (noteIndex > -1) {
-                    notesData[noteIndex].status = isDone ? 'completed' : 'pending';
-                    // Panggil fungsi filter lagi, bukan sekadar renderNotes
-                    // agar tidak merusak hasil pencarian yang sedang aktif
-                    applyFilters(); 
+                const newStatus = e.target.checked ? 'completed' : 'pending';
+                updateNoteStatus(noteId, newStatus);
+            });
+        });
+
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const noteId = parseInt(e.target.getAttribute('data-id'));
+                if(confirm("Yakin ingin menghapus catatan ini?")) {
+                    deleteNote(noteId);
                 }
             });
         });
     }
 
-    // ==========================================
-    // 3. FITUR PENCARIAN DAN FILTER STATUS
-    // ==========================================
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
+    document.getElementById('searchInput').addEventListener('input', fetchNotes);
+    document.getElementById('statusFilter').addEventListener('change', fetchNotes);
 
-    // Fungsi utama penyaring data
-    function applyFilters() {
-        // Ambil nilai dari inputan dan jadikan huruf kecil semua agar tidak sensitif huruf besar/kecil
-        const searchText = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value;
-
-        // Lakukan penyaringan pada array notesData
-        const filteredData = notesData.filter(note => {
-            // Cek apakah judul atau deskripsi mengandung kata yang dicari
-            const matchesSearch = note.title.toLowerCase().includes(searchText) || 
-                                  note.description.toLowerCase().includes(searchText);
-            
-            // Cek apakah statusnya sesuai dengan dropdown
-            const matchesStatus = statusValue === 'all' || note.status === statusValue;
-
-            // Kartu hanya ditampilkan jika lolos kedua syarat di atas
-            return matchesSearch && matchesStatus;
-        });
-
-        // Tampilkan hasil saringan ke layar
-        renderNotes(filteredData);
-    }
-
-    // Pasang "telinga" (event listener) saat user mengetik atau memilih dropdown
-    searchInput.addEventListener('input', applyFilters);
-    statusFilter.addEventListener('change', applyFilters);
-
-
-    // ==========================================
-    // 4. LOGIKA MODAL FORM (POP-UP)
-    // ==========================================
-    const addNoteBtn = document.getElementById('addNoteBtn');
     const noteModal = document.getElementById('noteModal');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const cancelNoteBtn = document.getElementById('cancelNoteBtn');
     const noteForm = document.getElementById('noteForm');
 
-    addNoteBtn.addEventListener('click', () => { noteModal.style.display = 'flex'; });
-
-    const closeModal = () => { 
-        noteModal.style.display = 'none'; 
-        noteForm.reset(); 
-    };
-
-    closeModalBtn.addEventListener('click', closeModal);
-    cancelNoteBtn.addEventListener('click', closeModal);
-    window.addEventListener('click', (event) => { if (event.target === noteModal) closeModal(); });
+    document.getElementById('addNoteBtn').addEventListener('click', () => { noteModal.style.display = 'flex'; });
+    
+    const closeModal = () => { noteModal.style.display = 'none'; noteForm.reset(); };
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelNoteBtn').addEventListener('click', closeModal);
 
     noteForm.addEventListener('submit', (e) => {
         e.preventDefault(); 
+        
         const newNote = {
             title: document.getElementById('noteTitle').value,
             description: document.getElementById('noteDesc').value,
@@ -160,24 +159,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         const submitBtn = noteForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
         submitBtn.textContent = 'Menyimpan...';
         submitBtn.disabled = true;
 
-        setTimeout(() => {
-            const newId = notesData.length > 0 ? Math.max(...notesData.map(n => n.id)) + 1 : 1;
-            const finalNote = { id: newId, ...newNote, status: 'pending' };
-            notesData.unshift(finalNote); // Tambahkan ke urutan paling atas
-            
-            // Render ulang layar dengan filter yang mungkin sedang aktif
-            applyFilters();
-            
-            submitBtn.textContent = originalText;
+        createNote(newNote).then(() => {
+            submitBtn.textContent = 'Simpan Catatan';
             submitBtn.disabled = false;
             closeModal();
-        }, 800); // Simulasi delay lebih singkat agar terasa lebih responsif
+        });
     });
 
-    // Tampilkan data pertama kali saat web dibuka
-    renderNotes(notesData);
+    fetchNotes();
 });
