@@ -1,5 +1,6 @@
 import express from "express";
-import noteRoutes from './routes/notesRoutes.js';
+import noteRoutes from './routes/notesRoutes.js'; //aulia
+import folderRoutes from './routes/folderRoutes'; //fadil
 import db from "./database.js";
 import Note from "./models/Note.js";
 import { fileURLToPath } from "url";
@@ -14,7 +15,8 @@ app.use(express.static(join(__dirname, "public")));
 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/notes', noteRoutes);
+app.use('/api/notes', noteRoutes); //aulia
+app.use('/api/folders', folderRoutes); //fadil
 
 try {
     await db.authenticate();

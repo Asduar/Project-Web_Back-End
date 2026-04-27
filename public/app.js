@@ -45,7 +45,7 @@ function renderNotes(dataYangMauDitampilkan) {
                 break;
             case 'project':
                 tagBg = 'rgba(243, 156, 18, 0.1)'
-                tagColor = 'rgb(243, 156, 18)'
+                tagColor = 'rgb(243, 18, 243)'
                 break;
             default:
                 tagBg = 'rgba(255, 215, 0, 0.1)';
