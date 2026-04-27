@@ -43,6 +43,10 @@ function renderNotes(dataYangMauDitampilkan) {
                 tagBg = 'rgba(30, 144, 255, 0.1)';
                 tagColor = '#1e90ff';
                 break;
+            case 'project':
+                tagBg = 'rgba(243, 156, 18, 0.1)'
+                tagColor = 'rgb(243, 156, 18)'
+                break;
             default:
                 tagBg = 'rgba(255, 215, 0, 0.1)';
                 tagColor = '#FFD700';
