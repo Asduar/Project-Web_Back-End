@@ -1,6 +1,6 @@
 import express from "express";
 import noteRoutes from './routes/notesRoutes.js'; //aulia
-import folderRoutes from './routes/folderRoutes'; //fadil
+import folderRoutes from './routes/folderRoutes.js'; //fadil
 import db from "./database.js";
 import Note from "./models/Note.js";
 import { fileURLToPath } from "url";
