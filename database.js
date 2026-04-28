@@ -5,7 +5,7 @@ import { Sequelize } from "sequelize";
 const db = new Sequelize('project_uts_db', 'root', 'Ntahakulupa21', {
     host: 'localhost',
     dialect: 'mysql',
-    logging: false
+    logging: false,
 });
 
 export default db;
