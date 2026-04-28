@@ -214,7 +214,11 @@ function renderFolders(folders) {
         card.innerHTML = `
             <div class="note-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="color: var(--accent-primary); margin: 0; font-size: 1.2rem;">📁 ${folder.name}</h3>
-                <button class="delete-folder-btn" data-id="${folder.id}" style="color: var(--accent-primary); background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button class="edit-folder-btn" data-id="${folder.id}" data-name="${folder.name}" style="color: #f39c12; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✏️</button>
+                    <button class="delete-folder-btn" data-id="${folder.id}" style="color: var(--accent-primary); background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+                </div>
             </div>
             <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
                 Dibuat: ${new Date(folder.createdAt).toLocaleDateString('id-ID')}
@@ -279,7 +283,27 @@ notesContainer.addEventListener('click', async (e) => {
             fetchFolders();
         }
     }
+
+    if (e.target.classList.contains('edit-folder-btn')) {
+        const id = e.target.getAttribute('data-id');
+        const namaLama = e.target.getAttribute('data-name');
+        
+        // Munculkan pop-up kecil bawaan browser untuk meminta nama baru
+        const namaBaru = prompt("Masukkan nama folder baru:", namaLama);
+        
+        // Cek jika user mengisi sesuatu (tidak kosong) dan namanya berbeda dari yang lama
+        if (namaBaru && namaBaru.trim() !== "" && namaBaru !== namaLama) {
+            // Tembak API UPDATE milik Fadil
+            await fetch(`/api/folders/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: namaBaru })
+            });
+            
+            fetchFolders();
+        }
+    }
 });
 
-// Mulai aplikasi
+
 fetchNotes();
