@@ -1,386 +1,193 @@
-/* Reset Dasar */
+:root {
+    --bg-main: #131313;
+    --bg-card: #1a1a1a;
+    --text-main: #f3ede3;
+    --text-muted: rgba(243, 237, 227, 0.5);
+    --accent-primary: #c64d31;
+    --accent-secondary: #2c4166;
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Outfit', sans-serif;
 }
-
-/* Update di bagian atas style.css Anda */
 
 body {
-    background-color: #f4f5f7;
-    color: #333;
-    /* TAMBAHAN BARU: Mencegah browser melakukan scroll pada seluruh halaman */
-    overflow: hidden; 
-    width: 100vw;
-    height: 100vh;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    min-height: 100vh;
 }
 
-/* Layout Utama */
 .app-container {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-    /* TAMBAHAN BARU: Mengunci kontainer agar pas seukuran layar */
-    overflow: hidden; 
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
-/* Sidebar Styling */
-.sidebar {
-    width: 260px;
-    background-color: #ffffff;
-    border-right: 1px solid #e1e4e8;
-    padding: 20px;
+.glass-header {
     display: flex;
-    flex-direction: column;
-    gap: 30px;
-    /* TAMBAHAN BARU: Berjaga-jaga jika nanti label/folder sangat banyak */
-    overflow-y: auto; 
-    height: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--accent-secondary);
 }
 
-/* Main Content Styling */
-.main-content {
-    flex: 1;
-    padding: 30px 40px;
-    overflow-y: auto; 
-    overflow-x: hidden; 
-    
-    /* Tiga baris ini adalah nyawa pengaturnya */
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+.glass-header h1 {
+    color: var(--text-main);
+    font-weight: 600;
 }
 
-.user-profile {
+.header-right {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 2rem;
 }
 
-.avatar {
+.controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.glass-input {
+    background: transparent;
+    border: 1px solid var(--accent-secondary);
+    color: var(--text-main);
+    padding: 0.8rem 1.2rem;
+    border-radius: 6px;
+    outline: none;
+    width: 100%;
+}
+
+.glass-input:focus {
+    border-color: var(--accent-primary);
+}
+
+.btn-gold {
+    background: var(--accent-primary);
+    color: var(--bg-main);
+    font-weight: 600;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.user-profile .avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: #0052cc;
-    color: white;
+    border: 2px solid var(--accent-primary);
+    object-fit: cover;
+}
+
+.glass-nav {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
+    gap: 2rem;
+    margin-bottom: 2rem;
 }
 
-
-.content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.filters {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.primary-btn {
-    background-color: #0052cc;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-/* Grid untuk Kartu Catatan */
-.notes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    
-    /* Memaksa grid ini mengembang sampai bawah */
-    flex-grow: 1; 
-    /* Agar kartu tetap di atas, tidak melayang ke tengah */
-    align-content: flex-start; 
-}
-
-.note-card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid #e1e4e8;
-}
-
-.note-header {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    margin-bottom: 10px;
-}
-
-/* --- MELANJUTKAN CSS SEBELUMNYA --- */
-
-/* Sidebar Navigation (Menghilangkan titik bullet dan memberi efek hover) */
-.folder-nav ul {
-    list-style: none;
-    margin-top: 15px;
-}
-
-.folder-nav li {
-    padding: 8px 12px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #5e6c84;
-    transition: background 0.2s;
-}
-
-.folder-nav li.active, .folder-nav li:hover {
-    background-color: #ebecf0;
-    color: #172b4d;
-    font-weight: bold;
-}
-
-.folder-nav h4, .tags-nav h4 {
-    display: flex;
-    justify-content: space-between;
-    color: #5e6c84;
-    font-size: 14px;
-    text-transform: uppercase;
-}
-
-.folder-nav button, .tags-nav button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    color: #5e6c84;
-}
-
-/* Tags & Labels (Membuatnya menjadi badge warna-warni) */
-#tagList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 15px;
-}
-
-.tag {
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 12px;
-    color: white;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.tag.urgent { background-color: #ff5630; } /* Merah */
-.tag.review { background-color: #ffab00; } /* Kuning */
-
-/* Collaborators Header (Menyusun avatar menyamping di kanan atas) */
-.collaborators {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.avatar-sm {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background-color: #dfe1e6;
-    color: #172b4d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-.share-btn {
-    background-color: #ebecf0;
-    color: #172b4d;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-/* Note Card Content & Footer */
-.note-card p {
-    font-size: 14px;
-    color: #5e6c84;
-    margin-bottom: 15px;
-    line-height: 1.5;
-}
-
-.note-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid #f4f5f7;
-    padding-top: 10px;
-}
-
-.note-footer .date {
-    font-size: 12px;
-    color: #a5adba;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    
-    /* Mendorong paksa elemen ini ke dasar kontainer */
-    margin-top: auto; 
-    
-    padding-top: 40px;
-    padding-bottom: 20px;
-}
-
-.pagination button {
+.nav-btn {
     background: transparent;
-    border: 1px solid #dfe1e6;
-    color: #5e6c84;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%; /* Membuat tombol menjadi bulat elegan */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    color: var(--text-muted);
+    border: none;
+    padding: 0.5rem 0;
     cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-.pagination button:hover {
-    background-color: #0052cc;
-    color: white;
-    border-color: #0052cc;
-}
-
-.pagination span {
-    font-size: 14px;
-    color: #5e6c84;
     font-weight: 500;
 }
+
+.nav-btn.active {
+    color: var(--text-main);
+    border-bottom: 2px solid var(--accent-primary);
+}
+
+.masonry-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1.5rem;
+}
+@media (max-width: 900px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .masonry-grid { grid-template-columns: 1fr; } }
+
+.note-card {
+    background: var(--bg-card);
+    border: 1px solid var(--accent-secondary);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.note-header h3 {
+    color: var(--text-main);
+    font-size: 1.1rem;
+}
+
+.note-card p {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 1rem 0;
+}
+
+.delete-btn {
+    color: var(--accent-primary) !important;
+    background: transparent !important;
+}
+
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(9, 30, 66, 0.5); /* Latar belakang gelap transparan */
-    display: none; /* Disembunyikan secara default */
-    justify-content: center;
-    align-items: center;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(19, 19, 19, 0.9);
+    display: flex; justify-content: center; align-items: center;
     z-index: 1000;
 }
 
-.modal-content {
-    background-color: white;
-    width: 100%;
-    max-width: 500px;
+.modal-glass {
+    background: var(--bg-main);
+    border: 1px solid var(--accent-secondary);
+    padding: 2.5rem;
     border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    animation: slideDown 0.3s ease-out; /* Animasi muncul yang halus */
+    width: 90%; max-width: 500px;
 }
 
-@keyframes slideDown {
-    from { transform: translateY(-20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+.modal-glass h2 {
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
 }
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid #dfe1e6;
-}
-
-.close-modal {
-    background: none;
-    border: none;
-    font-size: 24px;
-    color: #5e6c84;
-    cursor: pointer;
-}
-
-.close-modal:hover { color: #ff5630; }
 
 #noteForm {
-    padding: 24px;
-}
-
-.form-group {
-    margin-bottom: 16px;
     display: flex;
     flex-direction: column;
+    gap: 1.2rem;
 }
 
-.form-row {
-    display: flex;
-    gap: 16px;
+.form-row { display: flex; gap: 1rem; width: 100%; }
+.form-row > * { flex: 1; }
+
+.modal-actions { 
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 1rem; 
+    margin-top: 1rem; 
 }
 
-.form-row .form-group {
-    flex: 1;
+.btn-ghost { 
+    background: transparent; 
+    color: var(--text-main); 
+    border: 1px solid var(--accent-secondary); 
+    padding: 0.8rem 1.5rem; 
+    border-radius: 6px; 
+    cursor: pointer; 
 }
 
-.form-group label {
-    font-size: 14px;
-    font-weight: bold;
-    color: #172b4d;
-    margin-bottom: 8px;
-}
-
-.form-group input, .form-group textarea, .form-group select {
-    padding: 10px;
-    border: 2px solid #dfe1e6;
-    border-radius: 4px;
-    font-size: 14px;
-    transition: border-color 0.2s;
-}
-
-.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-    border-color: #0052cc;
-    outline: none;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
-}
-
-.btn-secondary {
-    background-color: white;
-    color: #172b4d;
-    border: 1px solid #dfe1e6;
-    padding: 8px 16px;
-    border-radius: 4px;
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
     cursor: pointer;
-    font-weight: bold;
 }
 
-.btn-secondary:hover { background-color: #ebecf0; }
-
-.btn-primary {
-    background-color: #0052cc;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
+select option {
+background-color: var(--bg-main);
+color: var(--text-main);
 }
-
-.btn-primary:hover { background-color: #0047b3; }

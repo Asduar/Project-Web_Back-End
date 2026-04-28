@@ -1,0 +1,42 @@
+import express from "express";
+import noteRoutes from './routes/notesRoutes.js'; //aulia
+import folderRoutes from './routes/folderRoutes'; //fadil
+import db from "./database.js";
+import Note from "./models/Note.js";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const app = express();
+
+const __fileName = fileURLToPath(import.meta.url);
+const __dirname = dirname(__fileName);
+
+app.use(express.static(join(__dirname, "public")));
+
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+app.use('/api/notes', noteRoutes); //aulia
+app.use('/api/folders', folderRoutes); //fadil
+
+try {
+    await db.authenticate();
+    console.log("Database MySQL terhubung!");
+    await db.sync();
+} catch (error) {
+    console.error("Gagal menghubungkan database:", error);
+}
+
+app.get("/", (req, res) => {
+  const index = join(__dirname, "public", "index.html");
+  res.sendFile(index);
+});
+
+app.get('/api/status', (req, res) => {
+    res.json({ message: "Server API To-Do List berjalan dengan baik!" });
+});
+
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server berjalan di http://localhost:${PORT}`);
+});
