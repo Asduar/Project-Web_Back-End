@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Memoora</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+
+    <div class="app-container" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
+        <div class="modal-glass" style="display: block; width: 100%; max-width: 400px; padding: 2.5rem;">
+            <h2 class="blink-gold" style="margin-bottom: 2rem; text-align: center;">Masuk Memoora</h2>
+            
+            <form id="loginForm" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                <input type="email" id="email" class="glass-input" placeholder="Email" required>
+                <input type="password" id="password" class="glass-input" placeholder="Password" required>
+                
+                <button type="submit" class="btn-gold blink-bg" style="width: 100%; margin-top: 1rem;">Masuk</button>
+                
+                <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
+                    Belum punya akun? <a href="register.html" style="color: var(--gold-primary); text-decoration: none; font-weight: 600;">Daftar gratis</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // --- BAGIAN PALING PENTING ---
+                    // Menyimpan Token dan Data User ke Browser agar tetap login
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    alert('Selamat datang kembali!');
+                    // Pindah ke halaman utama (Dashboard)
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Gagal Masuk: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan pada server.');
+            }
+        });
+    </script>
+</body>
+</html>
