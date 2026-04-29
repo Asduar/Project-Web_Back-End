@@ -1,193 +1,142 @@
 :root {
     --bg-main: #131313;
-    --bg-card: #1a1a1a;
     --text-main: #f3ede3;
-    --text-muted: rgba(243, 237, 227, 0.5);
     --accent-primary: #c64d31;
-    --accent-secondary: #2c4166;
+    --accent-secondary: #2c4161;
 }
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+body, .bg-body-tertiary {
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
     font-family: 'Outfit', sans-serif;
 }
 
-body {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    min-height: 100vh;
+.card, .bg-dark {
+    background-color: var(--bg-main) !important;
+    border: 1px solid var(--accent-secondary) !important;
 }
 
-.app-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+.form-control, .form-select {
+    background-color: var(--bg-main) !important;
+    border: 1px solid var(--accent-secondary) !important;
+    color: var(--text-main) !important;
 }
 
-.glass-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 0;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid var(--accent-secondary);
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(198, 77, 49, 0.25) !important; 
 }
 
-.glass-header h1 {
-    color: var(--text-main);
-    font-weight: 600;
+.form-control::placeholder {
+    color: rgba(243, 237, 227, 0.4) !important;
 }
 
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
+.text-gold {
+    color: var(--accent-primary) !important;
 }
-
-.controls {
-    display: flex;
-    gap: 1rem;
+.text-light {
+    color: var(--text-main) !important;
 }
-
-.glass-input {
-    background: transparent;
-    border: 1px solid var(--accent-secondary);
-    color: var(--text-main);
-    padding: 0.8rem 1.2rem;
-    border-radius: 6px;
-    outline: none;
-    width: 100%;
-}
-
-.glass-input:focus {
-    border-color: var(--accent-primary);
+.text-secondary {
+    color: rgba(243, 237, 227, 0.5) !important;
 }
 
 .btn-gold {
-    background: var(--accent-primary);
-    color: var(--bg-main);
+    background-color: var(--accent-primary) !important;
+    color: var(--bg-main) !important;
+    border: none;
     font-weight: 600;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 6px;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
+}
+.btn-gold:hover {
+    background-color: var(--text-main) !important;
+    color: var(--bg-main) !important;
 }
 
-.user-profile .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid var(--accent-primary);
-    object-fit: cover;
+.nav-tabs {
+    border-bottom: 1px solid var(--accent-secondary) !important;
 }
-
-.glass-nav {
-    display: flex;
-    gap: 2rem;
-    margin-bottom: 2rem;
+.nav-tabs .nav-link {
+    color: rgba(243, 237, 227, 0.5) !important;
+    border: none !important;
 }
-
-.nav-btn {
-    background: transparent;
-    color: var(--text-muted);
-    border: none;
-    padding: 0.5rem 0;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.nav-btn.active {
-    color: var(--text-main);
-    border-bottom: 2px solid var(--accent-primary);
-}
-
-.masonry-grid {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 1.5rem;
-}
-@media (max-width: 900px) { .masonry-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 600px) { .masonry-grid { grid-template-columns: 1fr; } }
-
-.note-card {
-    background: var(--bg-card);
-    border: 1px solid var(--accent-secondary);
-    border-radius: 8px;
-    padding: 1.5rem;
-}
-
-.note-header h3 {
-    color: var(--text-main);
-    font-size: 1.1rem;
-}
-
-.note-card p {
-    color: var(--text-muted);
-    line-height: 1.6;
-    margin: 1rem 0;
-}
-
-.delete-btn {
+.nav-tabs .nav-link.active {
+    background-color: transparent !important;
     color: var(--accent-primary) !important;
-    background: transparent !important;
+    border-bottom: 2px solid var(--accent-primary) !important;
 }
 
-.modal-overlay {
+.custom-modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(19, 19, 19, 0.9);
+    background: rgba(19, 19, 19, 0.85);
     display: flex; justify-content: center; align-items: center;
-    z-index: 1000;
+    z-index: 1050;
 }
-
-.modal-glass {
-    background: var(--bg-main);
-    border: 1px solid var(--accent-secondary);
-    padding: 2.5rem;
-    border-radius: 8px;
-    width: 90%; max-width: 500px;
-}
-
-.modal-glass h2 {
-    color: var(--text-main);
-    margin-bottom: 1.5rem;
-}
-
-#noteForm {
+/* Style untuk Inisial Profil */
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background-color: var(--accent-primary);
+    color: var(--bg-main);
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-}
-
-.form-row { display: flex; gap: 1rem; width: 100%; }
-.form-row > * { flex: 1; }
-
-.modal-actions { 
-    display: flex; 
-    justify-content: flex-end; 
-    gap: 1rem; 
-    margin-top: 1rem; 
-}
-
-.btn-ghost { 
-    background: transparent; 
-    color: var(--text-main); 
-    border: 1px solid var(--accent-secondary); 
-    padding: 0.8rem 1.5rem; 
-    border-radius: 6px; 
-    cursor: pointer; 
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1);
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
     cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    user-select: none;
 }
 
-select option {
-background-color: var(--bg-main);
-color: var(--text-main);
+.user-avatar:hover {
+    border-color: var(--text-main);
+    transform: scale(1.05);
+}
+
+.dropdown-item {
+    transition: 0.2s;
+    padding: 0.6rem 1.2rem;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(198, 77, 49, 0.1) !important;
+    color: var(--accent-primary) !important;
+}
+
+/* ========================================== */
+/* CUSTOM TOAST NOTIFICATION (Pengganti Alert)*/
+/* ========================================== */
+.memoora-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    z-index: 9999;
+    transform: translateX(150%);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.memoora-toast.show {
+    transform: translateX(0);
+}
+
+.toast-success {
+    background: rgba(46, 213, 115, 0.15);
+    border: 1px solid #2ed573;
+}
+
+.toast-error {
+    background: rgba(255, 71, 87, 0.15);
+    border: 1px solid #ff4757;
 }

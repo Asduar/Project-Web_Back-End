@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const router = express.Router();
-const JWT_SECRET = "BACKUPPLAN"; // Ganti dengan secret key kamu
+const JWT_SECRET = "RAHASIA_MEMOORA_2026"; // Ganti dengan secret key kamu
 
 // 1. [CREATE] - Registrasi User Baru
 router.post('/register', async (req, res) => {

@@ -1,5 +1,7 @@
 import { Sequelize } from "sequelize";
-import db from "../database.js"; // Memanggil koneksi database yang ada di folder luar
+import db from "../database.js";
+import Note from "./Note.js";
+import Folder from "./Folder.js";
 
 const { DataTypes } = Sequelize;
 
@@ -20,5 +22,11 @@ const User = db.define('users', {
 }, {
     freezeTableName: true // Memastikan nama tabel tetap 'users', tidak berubah jadi jamak otomatis
 });
+
+User.hasMany(Note, { foreignKey: 'userId', as: 'notes' });
+Note.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+User.hasMany(Folder, { foreignKey: 'userId', as: 'folders' });
+Folder.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 export default User;

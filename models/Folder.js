@@ -10,6 +10,10 @@ const Folder = db.define('Folder', {
         validate: {
             notEmpty: true
         }
+    },
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false // Folder wajib punya pemilik
     }
 }, {
     tableName: 'folders',

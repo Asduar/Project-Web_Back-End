@@ -2,10 +2,13 @@ import express from "express";
 import noteRoutes from './routes/notesRoutes.js'; //aulia
 import folderRoutes from './routes/folderRoutes.js'; //fadil
 import collaborationRoutes from "./routes/collaborationRoutes.js"; //kasih
+import userRoutes from './routes/userRoutes.js'; //yehezkiel
 import db from "./database.js";
 import Note from "./models/Note.js";
+import User from "./models/User.js";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { verifyToken } from "./middleware/auth.js";
 
 const app = express();
 
@@ -16,9 +19,10 @@ app.use(express.static(join(__dirname, "public")));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/notes', noteRoutes); //aulia
-app.use('/api/folders', folderRoutes); //fadil
-app.use("/api/collaborations", collaborationRoutes); //kasih
+app.use('/api/notes', verifyToken, noteRoutes); //aulia
+app.use('/api/folders', verifyToken, folderRoutes); //fadil
+app.use("/api/collabs", verifyToken, collaborationRoutes); //kasih
+app.use('/api/users', userRoutes); //yehezkiel
 
 try {
     await db.authenticate();
@@ -38,7 +42,8 @@ app.get('/api/status', (req, res) => {
 });
 
 
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+db.sync() // KOSONGKAN KURUNGNYA AGAR AMAN
+    .then(() => {
+        console.log("Database berhasil disinkronkan!");
+        app.listen(3000, () => console.log("Server berjalan di port 3000"));
+    });

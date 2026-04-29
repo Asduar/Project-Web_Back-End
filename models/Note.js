@@ -1,31 +1,31 @@
-import { Sequelize } from "sequelize";
-import db from "../database.js";
+import { DataTypes } from 'sequelize';
+import db from '../database.js';
+import Folder from './Folder.js';
 
-const { DataTypes } = Sequelize;
-
-const Note = db.define('notes', {
-    title: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    description: {
-        type: DataTypes.TEXT,
+const Note = db.define('Note', {
+    title: { type: DataTypes.STRING, allowNull: false },
+    description: { type: DataTypes.TEXT },
+    dueDate: { type: DataTypes.DATEONLY },
+    tag: { type: DataTypes.STRING },
+    status: { type: DataTypes.STRING, defaultValue: 'pending' },
+    folderId: {
+        type: DataTypes.INTEGER,
+        references: {
+            model: Folder,
+            key: 'id'
+        },
         allowNull: true
     },
-    dueDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: true
-    },
-    tag: {
-        type: DataTypes.STRING,
-        defaultValue: 'normal'
-    },
-    status: {
-        type: DataTypes.ENUM('pending', 'completed'),
-        defaultValue: 'pending'
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false // Catatan wajib punya pemilik
     }
 }, {
-    freezeTableName: true
+    tableName: 'notes',
+    timestamps: true
 });
+
+Note.belongsTo(Folder, { foreignKey: 'folderId', as: 'folder' });
+Folder.hasMany(Note, { foreignKey: 'folderId', as: 'notes' });
 
 export default Note;

@@ -1,309 +1,631 @@
 // ==========================================
+// 0. CEK OTENTIKASI & TAMPILAN PROFIL
+// ==========================================
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user'));
+
+if (!token || !user) {
+    window.location.href = 'login.html';
+} else {
+    // Membuat inisial dari username (Contoh: Yehezkiel -> Y)
+    const initials = user.username.charAt(0).toUpperCase();
+    document.getElementById('userAvatar').textContent = initials;
+}
+
+// ==========================================
 // 1. TANGKAP SEMUA ELEMEN HTML
 // ==========================================
 const notesContainer = document.getElementById('notesContainer');
-const addMainBtn = document.getElementById('addNoteBtn'); 
+const addMainBtn = document.getElementById('addNoteBtn');
 const searchInput = document.getElementById('searchInput');
 const statusFilter = document.getElementById('statusFilter');
 
 const navNotes = document.getElementById('navNotes');
 const navFolders = document.getElementById('navFolders');
+const navCollabs = document.getElementById('navCollabs'); 
 
 const noteModal = document.getElementById('noteModal');
 const noteForm = document.getElementById('noteForm');
 const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+const noteFolderDropdown = document.getElementById('noteFolder');
 
 const folderModal = document.getElementById('folderModal');
 const folderForm = document.getElementById('folderForm');
 const cancelFolderBtn = document.getElementById('cancelFolderBtn');
 
-// State Management (Penyimpan Data Sementara)
-let allNotes = []; 
-let allFolders = []; // Wadah baru untuk menyimpan memori folder
-let currentView = 'notes'; 
+const collabModal = document.getElementById('collabModal'); 
+const collabForm = document.getElementById('collabForm'); 
+const cancelCollabBtn = document.getElementById('cancelCollabBtn'); 
 
 // ==========================================
-// 2. LOGIKA NAVIGASI (SWITCH TABS)
+// 2. STATE MANAGEMENT
+// ==========================================
+let allNotes = [];
+let allFolders = [];
+let allCollabs = []; 
+let currentView = 'notes';
+let editingNoteId = null;
+
+// ==========================================
+// 3. LOGIKA NAVIGASI
 // ==========================================
 navNotes.addEventListener('click', () => {
     currentView = 'notes';
-    navNotes.classList.add('active');
-    navFolders.classList.remove('active');
+    navNotes.classList.add('active', 'text-gold');
+    navNotes.classList.remove('text-secondary');
+    navFolders.classList.remove('active', 'text-gold');
+    navFolders.classList.add('text-secondary');
+    navCollabs.classList.remove('active', 'text-gold');
+    navCollabs.classList.add('text-secondary');
     
-    addMainBtn.textContent = 'Catatan Baru'; 
-    searchInput.style.display = 'block';      
-    searchInput.placeholder = 'Cari catatan...'; // Kembalikan teks
-    statusFilter.style.display = 'block';     // Munculkan filter status
+    addMainBtn.textContent = 'Catatan Baru';
+    searchInput.placeholder = 'Cari catatan...';
+    statusFilter.style.display = 'block';
     
-    fetchNotes(); 
+    notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat catatan...</div>';
+    fetchNotes();
 });
 
 navFolders.addEventListener('click', () => {
     currentView = 'folders';
-    navFolders.classList.add('active');
-    navNotes.classList.remove('active');
+    navFolders.classList.add('active', 'text-gold');
+    navFolders.classList.remove('text-secondary');
+    navNotes.classList.remove('active', 'text-gold');
+    navNotes.classList.add('text-secondary');
+    navCollabs.classList.remove('active', 'text-gold');
+    navCollabs.classList.add('text-secondary');
     
-    addMainBtn.textContent = 'Folder Baru'; 
-    searchInput.style.display = 'block';      // TETAP MUNCULKAN PENCARIAN
-    searchInput.placeholder = 'Cari folder...'; // Ganti teks pencarian
-    statusFilter.style.display = 'none';      // Sembunyikan filternya saja
+    addMainBtn.textContent = 'Folder Baru';
+    searchInput.placeholder = 'Cari folder...';
+    statusFilter.style.display = 'none';
     
-    fetchFolders(); 
+    notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat folder...</div>';
+    fetchFolders();
+});
+
+navCollabs.addEventListener('click', () => {
+    currentView = 'collabs';
+    navCollabs.classList.add('active', 'text-gold');
+    navCollabs.classList.remove('text-secondary');
+    navNotes.classList.remove('active', 'text-gold');
+    navNotes.classList.add('text-secondary');
+    navFolders.classList.remove('active', 'text-gold');
+    navFolders.classList.add('text-secondary');
+    
+    addMainBtn.textContent = 'Undang Teman';
+    searchInput.placeholder = 'Cari email...';
+    statusFilter.style.display = 'none';
+    
+    notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat kolaborator...</div>';
+    fetchCollabs();
 });
 
 addMainBtn.addEventListener('click', () => {
     if (currentView === 'notes') {
+        editingNoteId = null; 
+        noteForm.reset();
+        document.querySelector('#noteModal h4').textContent = "Buat Catatan Baru";
         noteModal.style.display = 'flex';
     } else if (currentView === 'folders') {
         folderModal.style.display = 'flex';
+    } else if (currentView === 'collabs') {
+        collabModal.style.display = 'flex';
     }
 });
 
-// ==========================================
-// 3. FITUR PENCARIAN & FILTER (GABUNGAN)
-// ==========================================
 function jalankanFilter() {
     const kataKunci = searchInput.value.toLowerCase();
-
     if (currentView === 'notes') {
         const statusPilihan = statusFilter.value;
         const dataTersaring = allNotes.filter(note => {
-            const cocokKata = note.title.toLowerCase().includes(kataKunci) || note.description.toLowerCase().includes(kataKunci);
+            const cocokKata = note.title.toLowerCase().includes(kataKunci) || (note.description && note.description.toLowerCase().includes(kataKunci));
             const cocokStatus = statusPilihan === 'all' || note.status === statusPilihan;
             return cocokKata && cocokStatus;
         });
-        renderNotes(dataTersaring);
-    } 
-    else if (currentView === 'folders') {
-        // Logika pencarian khusus untuk folder
-        const dataTersaring = allFolders.filter(folder => {
-            return folder.name.toLowerCase().includes(kataKunci);
-        });
-        renderFolders(dataTersaring);
+        renderNotesTemplate(dataTersaring);
+    } else if (currentView === 'folders') {
+        const dataTersaring = allFolders.filter(folder => folder.name.toLowerCase().includes(kataKunci));
+        renderFoldersTemplate(dataTersaring);
+    } else if (currentView === 'collabs') {
+        const dataTersaring = allCollabs.filter(collab => collab.email.toLowerCase().includes(kataKunci));
+        renderCollabsTemplate(dataTersaring);
     }
 }
 
-// Pasang sensor pencarian
 searchInput.addEventListener('input', jalankanFilter);
 statusFilter.addEventListener('change', jalankanFilter);
 
 // ==========================================
-// 4. FITUR NOTES (TUGAS ANDA)
-// ==========================================
-async function fetchNotes() {
-    try {
-        const response = await fetch('/api/notes');
-        const result = await response.json();
-        if (result.success) {
-            allNotes = result.data;
-            jalankanFilter(); 
-        }
-    } catch (error) {
-        console.error("Gagal mengambil data notes:", error);
-    }
-}
-
-function renderNotes(data) {
-    if (currentView !== 'notes') return; 
-    notesContainer.innerHTML = ''; 
-
-    data.forEach(note => {
-        const isChecked = note.status === 'completed' ? 'checked' : '';
-        const titleStyle = note.status === 'completed' ? 'text-decoration: line-through; color: gray;' : 'color: var(--text-main);';
-
-        // ==========================================
-        // LOGIKA WARNA LABEL (DIKEMBALIKAN)
-        // ==========================================
-        let tagBg, tagColor;
-        switch(note.tag.toLowerCase()) {
-            case 'urgent':
-                tagBg = 'rgba(198, 77, 49, 0.1)'; // Pakai warna aksen primer Anda
-                tagColor = 'var(--accent-primary)'; 
-                break;
-            case 'normal':
-                tagBg = 'rgba(46, 213, 115, 0.1)'; // Hijau
-                tagColor = '#2ed573';              
-                break;
-            case 'review':
-                tagBg = 'rgba(30, 144, 255, 0.1)'; // Biru
-                tagColor = '#1e90ff';              
-                break;
-            case 'project':
-                tagBg = 'rgba(243, 156, 18, 0.1)'; // Oranye
-                tagColor = '#f39c12';
-                break;
-            default:
-                tagBg = 'transparent';  
-                tagColor = 'var(--text-main)';              
-        }
-
-        const noteCard = document.createElement('div');
-        noteCard.className = 'note-card';
-        noteCard.innerHTML = `
-            <div class="note-header" style="display: flex; justify-content: space-between; align-items: start;">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <input type="checkbox" class="note-check" data-id="${note.id}" ${isChecked}>
-                    <h3 style="${titleStyle}; margin: 0; transition: all 0.3s;">${note.title}</h3>
-                </div>
-                <button class="delete-btn" data-id="${note.id}">✕</button>
-            </div>
-            <p>${note.description}</p>
-            <div class="note-footer" style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-top: 15px;">
-                <span style="background: ${tagBg}; color: ${tagColor}; border: 1px solid ${tagColor}; padding: 4px 10px; border-radius: 8px; font-weight: bold;">${note.tag.toUpperCase()}</span>
-                <span>🗓️ ${note.dueDate}</span>
-            </div>
-        `;
-        notesContainer.appendChild(noteCard);
-    });
-}
-
-// Tambah Note
-noteForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); 
-    const dataBaru = {
-        title: document.getElementById('noteTitle').value,
-        description: document.getElementById('noteDesc').value,
-        dueDate: document.getElementById('noteDate').value,
-        tag: document.getElementById('noteTag').value
-    };
-
-    try {
-        const response = await fetch('/api/notes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataBaru)
-        });
-        if (response.ok) {
-            noteModal.style.display = 'none'; 
-            noteForm.reset(); 
-            fetchNotes(); 
-        }
-    } catch (error) {
-        console.error("Gagal menyimpan catatan:", error);
-    }
-});
-
-cancelNoteBtn.addEventListener('click', () => {
-    noteModal.style.display = 'none';
-    noteForm.reset();
-});
-
-// ==========================================
-// 5. FITUR FOLDERS (TUGAS FADIL)
+// 4. FITUR FOLDERS (FADIL)
 // ==========================================
 async function fetchFolders() {
     try {
-        const response = await fetch('/api/folders');
+        const response = await fetch('/api/folders', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         const result = await response.json();
         if (result.success) {
-            allFolders = result.data; // Simpan memori folder
-            jalankanFilter(); // Tampilkan lewat filter
+            allFolders = result.data;
+            updateFolderDropdown(); 
+            if (currentView === 'folders') jalankanFilter();
         }
-    } catch (error) {
-        console.error("Gagal mengambil data folder:", error);
-    }
+    } catch (error) { console.error("Gagal mengambil folder:", error); }
 }
 
-function renderFolders(folders) {
-    if (currentView !== 'folders') return; 
-    notesContainer.innerHTML = ''; 
+function updateFolderDropdown() {
+    noteFolderDropdown.innerHTML = '<option value="">-- Pilih Folder (Opsional) --</option>';
+    allFolders.forEach(folder => {
+        noteFolderDropdown.innerHTML += `<option value="${folder.id}">${folder.name}</option>`;
+    });
+}
 
+function renderFoldersTemplate(folders) {
+    if (currentView !== 'folders') return;
+    notesContainer.innerHTML = '';
+    if (folders.length === 0) {
+        notesContainer.innerHTML = `<div class="col-12 text-center mt-5 pt-5"><h1 style="font-size: 4rem; opacity: 0.3;">📁</h1><h5 class="text-gold mt-3">Belum ada folder</h5></div>`;
+        return;
+    }
     folders.forEach(folder => {
         const card = document.createElement('div');
-        card.className = 'note-card'; 
+        card.className = 'col-md-4 col-sm-6 mb-4';
         card.innerHTML = `
-            <div class="note-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="color: var(--accent-primary); margin: 0; font-size: 1.2rem;">📁 ${folder.name}</h3>
-                
-                <div style="display: flex; gap: 12px;">
-                    <button class="edit-folder-btn" data-id="${folder.id}" data-name="${folder.name}" style="color: #f39c12; background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✏️</button>
-                    <button class="delete-folder-btn" data-id="${folder.id}" style="color: var(--accent-primary); background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+            <div class="card bg-dark border-secondary shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-gold fw-bold">📁 ${folder.name}</h5>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-outline-warning edit-folder-btn fw-bold" data-id="${folder.id}" data-name="${folder.name}">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger delete-folder-btn fw-bold" data-id="${folder.id}">Hapus</button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">
-                Dibuat: ${new Date(folder.createdAt).toLocaleDateString('id-ID')}
-            </p>
-        `;
+            </div>`;
         notesContainer.appendChild(card);
     });
 }
 
-// Tambah Folder
 folderForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('folderName').value;
-    try {
-        const response = await fetch('/api/folders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
-        });
-        if (response.ok) {
-            folderModal.style.display = 'none';
-            folderForm.reset();
-            fetchFolders();
-        }
-    } catch (error) {
-        console.error("Gagal menyimpan folder:", error);
-    }
-});
-
-cancelFolderBtn.addEventListener('click', () => {
+    await fetch('/api/folders', { 
+        method: 'POST', 
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }, 
+        body: JSON.stringify({ name }) 
+    });
     folderModal.style.display = 'none';
     folderForm.reset();
+    fetchFolders();
 });
 
+cancelFolderBtn.addEventListener('click', () => { folderModal.style.display = 'none'; folderForm.reset(); });
+
 // ==========================================
-// 6. GLOBAL EVENT LISTENER (DELETE & UPDATE)
+// 5. FITUR NOTES (AULIA)
 // ==========================================
-notesContainer.addEventListener('click', async (e) => {
-    if (e.target.classList.contains('delete-btn')) {
-        const id = e.target.getAttribute('data-id');
-        if (confirm("Yakin ingin menghapus catatan ini?")) {
-            await fetch(`/api/notes/${id}`, { method: 'DELETE' });
-            fetchNotes();
+async function fetchNotes() {
+    try {
+        const response = await fetch('/api/notes', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (result.success) {
+            allNotes = result.data;
+            if (currentView === 'notes') jalankanFilter();
+        }
+    } catch (error) { console.error("Gagal mengambil catatan:", error); }
+}
+
+function renderNotesTemplate(data) {
+    if (currentView !== 'notes') return;
+    notesContainer.innerHTML = '';
+    if (data.length === 0) {
+        notesContainer.innerHTML = `<div class="col-12 text-center mt-5 pt-5"><h1 style="font-size: 4rem; opacity: 0.3;">📝</h1><h5 class="text-gold mt-3">Belum ada catatan</h5></div>`;
+        return;
+    }
+    data.forEach(note => {
+        const isChecked = note.status === 'completed' ? 'checked' : '';
+        const titleStyle = note.status === 'completed' ? 'text-decoration-line-through text-secondary' : 'text-light';
+        let tagBg, tagColor;
+        switch(note.tag?.toLowerCase()) {
+            case 'urgent': tagBg = 'rgba(198, 77, 49, 0.1)'; tagColor = '#c64d31'; break;
+            case 'normal': tagBg = 'rgba(46, 213, 115, 0.1)'; tagColor = '#2ed573'; break;
+            case 'review': tagBg = 'rgba(30, 144, 255, 0.1)'; tagColor = '#1e90ff'; break;
+            case 'project': tagBg = 'rgba(243, 156, 18, 0.1)'; tagColor = '#f39c12'; break;
+            default: tagBg = 'transparent'; tagColor = '#f3ede3';
+        }
+        const folderTerkait = allFolders.find(f => f.id === note.folderId);
+        const namaFolderRender = folderTerkait ? `📁 ${folderTerkait.name}` : 'Tanpa Folder';
+
+        const noteCard = document.createElement('div');
+        noteCard.className = 'col-md-4 col-sm-6 mb-4';
+        noteCard.innerHTML = `
+            <div class="card h-100 bg-dark border-secondary shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex gap-2 align-items-center">
+                            <input class="form-check-input note-check fs-5 mt-0" type="checkbox" data-id="${note.id}" ${isChecked}>
+                            <h5 class="card-title mb-0 ${titleStyle} fw-bold">${note.title}</h5>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-outline-warning edit-note-btn fw-bold" 
+                                    data-id="${note.id}" data-title="${note.title}" data-desc="${note.description || ''}"
+                                    data-date="${note.dueDate || ''}" data-tag="${note.tag}" data-folder="${note.folderId || ''}">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger delete-btn fw-bold" data-id="${note.id}">Hapus</button>
+                        </div>
+                    </div>
+                    <p class="card-text text-secondary flex-grow-1">${note.description || ''}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary">
+                        <span class="badge" style="background-color: ${tagBg}; color: ${tagColor}; border: 1px solid ${tagColor};">${note.tag ? note.tag.toUpperCase() : 'NO TAG'}</span>
+                        <small class="text-gold fw-bold">${namaFolderRender}</small>
+                    </div>
+                </div>
+            </div>`;
+        notesContainer.appendChild(noteCard);
+    });
+}
+
+noteForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        title: document.getElementById('noteTitle').value,
+        description: document.getElementById('noteDesc').value,
+        dueDate: document.getElementById('noteDate').value,
+        tag: document.getElementById('noteTag').value,
+        folderId: document.getElementById('noteFolder').value || null 
+    };
+    try {
+        const url = editingNoteId ? `/api/notes/${editingNoteId}` : '/api/notes';
+        const method = editingNoteId ? 'PUT' : 'POST';
+        await fetch(url, { 
+            method: method, 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }, 
+            body: JSON.stringify(data) 
+        });
+        noteModal.style.display = 'none';
+        noteForm.reset();
+        editingNoteId = null;
+        fetchNotes();
+    } catch (error) { console.error("Error:", error); }
+});
+
+cancelNoteBtn.addEventListener('click', () => { noteModal.style.display = 'none'; noteForm.reset(); editingNoteId = null; });
+
+// ==========================================
+// 6. FITUR COLLABS (KASIH)
+// ==========================================
+async function fetchCollabs() {
+    try {
+        const response = await fetch('/api/collabs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }); 
+        const result = await response.json();
+        if (result.success) {
+            allCollabs = result.data;
+            if (currentView === 'collabs') jalankanFilter(); 
+        } else {
+            if (currentView === 'collabs') {
+                notesContainer.innerHTML = `<div class="col-12 text-center text-danger mt-5">Gagal memuat: ${result.message}</div>`;
+            }
+        }
+    } catch (error) {
+        if (currentView === 'collabs') {
+            notesContainer.innerHTML = '<div class="col-12 text-center text-danger mt-5">Koneksi ke server API Collabs gagal.</div>';
+        } else {
+            console.warn("Peringatan: API Collabs belum siap.");
         }
     }
+}
 
+function renderCollabsTemplate(collabs) {
+    if (currentView !== 'collabs') return;
+    notesContainer.innerHTML = '';
+
+    if (collabs.length === 0) {
+        notesContainer.innerHTML = `
+            <div class="col-12 text-center mt-5 pt-5">
+                <h1 style="font-size: 4rem; opacity: 0.3;">🤝</h1>
+                <h5 class="text-gold mt-3">Belum ada kolaborator</h5>
+                <p class="text-secondary">Klik tombol "Undang Teman" di pojok kanan atas.</p>
+            </div>`;
+        return;
+    }
+
+    collabs.forEach(collab => {
+        const roleBg = collab.role === 'editor' ? 'rgba(198, 77, 49, 0.1)' : 'rgba(30, 144, 255, 0.1)';
+        const roleColor = collab.role === 'editor' ? '#c64d31' : '#1e90ff';
+
+        const card = document.createElement('div');
+        card.className = 'col-md-3 col-sm-6 mb-4';
+        card.innerHTML = `
+            <div class="card bg-dark border-secondary shadow-sm h-100">
+                <div class="card-body d-flex flex-column align-items-center text-center">
+                    <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">👤</div>
+                    <h6 class="card-title text-light fw-bold mb-1 w-100 text-truncate" title="${collab.email}">${collab.email}</h6>
+                    <span class="badge mb-3" style="background-color: ${roleBg}; color: ${roleColor}; border: 1px solid ${roleColor};">${collab.role.toUpperCase()}</span>
+                    <button class="btn btn-sm btn-outline-danger fw-bold w-100 mt-auto delete-collab-btn" data-id="${collab.id}">Cabut Akses</button>
+                </div>
+            </div>`;
+        notesContainer.appendChild(card);
+    });
+}
+
+collabForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        email: document.getElementById('collabEmail').value,
+        role: document.getElementById('collabRole').value
+    };
+    try {
+        await fetch('/api/collabs', { 
+            method: 'POST', 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }, 
+            body: JSON.stringify(data) 
+        });
+        collabModal.style.display = 'none';
+        collabForm.reset();
+        fetchCollabs(); 
+    } catch (error) { console.error("Error:", error); }
+});
+
+cancelCollabBtn.addEventListener('click', () => { collabModal.style.display = 'none'; collabForm.reset(); });
+
+// ==========================================
+// 7. GLOBAL EVENT (Klik Tombol di Kartu)
+// ==========================================
+notesContainer.addEventListener('click', async (e) => {
+    // HAPUS NOTE
+    if (e.target.classList.contains('delete-btn')) {
+        if (confirm("Hapus catatan ini?")) { 
+            await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }); 
+            fetchNotes(); 
+        }
+    }
+    // CHECK/UNCHECK NOTE
     if (e.target.classList.contains('note-check')) {
-        const id = e.target.getAttribute('data-id');
-        const statusBaru = e.target.checked ? 'completed' : 'pending';
-        await fetch(`/api/notes/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: statusBaru })
+        await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { 
+            method: 'PUT', 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }, 
+            body: JSON.stringify({ status: e.target.checked ? 'completed' : 'pending' }) 
         });
         fetchNotes();
     }
-
+    // EDIT NOTE BUKA MODAL
+    if (e.target.classList.contains('edit-note-btn')) {
+        editingNoteId = e.target.getAttribute('data-id');
+        document.getElementById('noteTitle').value = e.target.getAttribute('data-title');
+        document.getElementById('noteDesc').value = e.target.getAttribute('data-desc');
+        document.getElementById('noteDate').value = e.target.getAttribute('data-date');
+        document.getElementById('noteTag').value = e.target.getAttribute('data-tag');
+        document.getElementById('noteFolder').value = e.target.getAttribute('data-folder'); 
+        document.querySelector('#noteModal h4').textContent = "Edit Catatan";
+        noteModal.style.display = 'flex';
+    }
+    // HAPUS FOLDER
     if (e.target.classList.contains('delete-folder-btn')) {
-        const id = e.target.getAttribute('data-id');
-        if (confirm("Yakin ingin menghapus folder ini?")) {
-            await fetch(`/api/folders/${id}`, { method: 'DELETE' });
-            fetchFolders();
+        if (confirm("Hapus folder ini?")) { 
+            await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }); 
+            fetchFolders(); fetchNotes(); 
         }
     }
-
+    // EDIT FOLDER
     if (e.target.classList.contains('edit-folder-btn')) {
-        const id = e.target.getAttribute('data-id');
-        const namaLama = e.target.getAttribute('data-name');
-        
-        // Munculkan pop-up kecil bawaan browser untuk meminta nama baru
-        const namaBaru = prompt("Masukkan nama folder baru:", namaLama);
-        
-        // Cek jika user mengisi sesuatu (tidak kosong) dan namanya berbeda dari yang lama
-        if (namaBaru && namaBaru.trim() !== "" && namaBaru !== namaLama) {
-            // Tembak API UPDATE milik Fadil
-            await fetch(`/api/folders/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: namaBaru })
-            });
-            
-            fetchFolders();
+        const namaBaru = prompt("Ubah nama folder:", e.target.getAttribute('data-name'));
+        if (namaBaru && namaBaru.trim()) { 
+            await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { 
+                method: 'PUT', 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                }, 
+                body: JSON.stringify({ name: namaBaru }) 
+            }); 
+            fetchFolders(); fetchNotes(); 
+        }
+    }
+    
+    // LOGIKA HAPUS COLLAB
+    if (e.target.classList.contains('delete-collab-btn')) {
+        if (confirm("Cabut akses kolaborator ini?")) { 
+            await fetch(`/api/collabs/${e.target.getAttribute('data-id')}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` } 
+            }); 
+            fetchCollabs(); 
         }
     }
 });
 
+// ==========================================
+// 8. JALANKAN SAAT WEB PERTAMA DIBUKA
+// ==========================================
+async function startApp() {
+    await fetchFolders(); 
+    await fetchNotes();   
+    await fetchCollabs(); 
+}
+startApp();
 
-fetchNotes();
+// ==========================================
+// 10. LOGIKA MODAL PENGATURAN & CUSTOM NOTIFIKASI
+// ==========================================
+const userAvatar = document.getElementById('userAvatar');
+const settingsModal = document.getElementById('settingsModal');
+const settingsForm = document.getElementById('settingsForm');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+// FUNGSI 1: TOAST NOTIFICATION (Melayang di kanan atas)
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `memoora-toast toast-${type}`;
+    toast.innerHTML = type === 'success' ? `✅ ${message}` : `❌ ${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 2500);
+}
+
+// FUNGSI 2: MODAL KONFIRMASI CUSTOM (Pengganti popup putih)
+function showCustomConfirm(title, text, requireInput = false) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        const inputField = document.getElementById('confirmInput');
+        
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmText').textContent = text;
+        
+        if(requireInput) {
+            inputField.style.display = 'block';
+            inputField.value = '';
+        } else {
+            inputField.style.display = 'none';
+        }
+
+        modal.style.display = 'flex';
+
+        // Jika tombol YA ditekan
+        document.getElementById('btnConfirmOk').onclick = () => {
+            if(requireInput) {
+                if(inputField.value === 'HAPUS') {
+                    modal.style.display = 'none';
+                    resolve(true);
+                } else {
+                    showToast('Gagal: Anda harus mengetik HAPUS huruf besar semua!', 'error');
+                }
+            } else {
+                modal.style.display = 'none';
+                resolve(true);
+            }
+        };
+
+        // Jika tombol BATAL ditekan
+        document.getElementById('btnConfirmCancel').onclick = () => {
+            modal.style.display = 'none';
+            resolve(false);
+        };
+    });
+}
+
+// Buka modal pengaturan
+if (userAvatar && settingsModal) {
+    userAvatar.addEventListener('click', () => {
+        document.getElementById('editUsername').value = user.username;
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editPassword').value = ''; 
+        settingsModal.style.display = 'flex';
+    });
+}
+
+// Tutup modal pengaturan
+if (closeSettingsBtn) {
+    closeSettingsBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'none';
+    });
+}
+
+// Submit Edit Profil
+if (settingsForm) {
+    settingsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('editUsername').value;
+        const newEmail = document.getElementById('editEmail').value;
+        const newPassword = document.getElementById('editPassword').value;
+
+        try {
+            const response = await fetch('/api/users/profile', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ 
+                    id: user.id, username: newName, email: newEmail, password: newPassword 
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast("Profil diperbarui! Silakan login kembali.", "success");
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }, 1500);
+            } else {
+                showToast(result.message, "error");
+            }
+        } catch (error) { 
+            showToast("Terjadi kesalahan server saat update.", "error"); 
+        }
+    });
+}
+
+// Tombol Logout
+document.getElementById('logoutSettingsBtn').addEventListener('click', async () => {
+    settingsModal.style.display = 'none'; // Sembunyikan modal pengaturan
+    
+    // Panggil modal custom kita
+    const yakin = await showCustomConfirm('Logout', 'Yakin ingin keluar dari sesi Memoora saat ini?');
+    
+    if (yakin) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    } else {
+        settingsModal.style.display = 'flex'; // Munculkan pengaturan lagi jika batal
+    }
+});
+
+// Tombol Hapus Akun
+document.getElementById('deleteAccountSettingsBtn').addEventListener('click', async () => {
+    settingsModal.style.display = 'none'; // Sembunyikan modal pengaturan
+    
+    // Panggil modal custom kita (Tahap 1: Peringatan)
+    const yakin = await showCustomConfirm('Hapus Akun', 'Menghapus akun akan memusnahkan seluruh catatan dan folder Anda secara permanen. Lanjutkan?');
+    
+    if (yakin) {
+        // Panggil modal custom kita (Tahap 2: Input teks)
+        const konfirmasiAkhir = await showCustomConfirm('Konfirmasi Akhir', 'Ketik kata HAPUS di bawah ini untuk memusnahkan akun:', true);
+        
+        if (konfirmasiAkhir) {
+            try {
+                const response = await fetch(`/api/users/${user.id}`, { 
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Akun berhasil dimusnahkan. Selamat tinggal!", "success");
+                    setTimeout(() => {
+                        localStorage.clear();
+                        window.location.href = 'login.html';
+                    }, 1500);
+                }
+            } catch (error) { 
+                showToast("Gagal menghapus akun karena masalah server.", "error"); 
+            }
+        } else {
+            settingsModal.style.display = 'flex';
+        }
+    } else {
+        settingsModal.style.display = 'flex';
+    }
+});
