@@ -43,7 +43,7 @@ app.get('/api/status', (req, res) => {
 });
 
 // Kita pertahankan { alter: true } agar tabel Users dan pembaruan tabel lainnya otomatis masuk ke MySQL
-db.sync({ alter: true })
+db.sync({ force: true })
     .then(() => {
         console.log("Database berhasil disinkronkan!");
         app.listen(3000, () => console.log("Server berjalan di port 3000"));
