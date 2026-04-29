@@ -1,4 +1,18 @@
 // ==========================================
+// 0. CEK OTENTIKASI & TAMPILAN PROFIL
+// ==========================================
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user'));
+
+if (!token || !user) {
+    window.location.href = 'login.html';
+} else {
+    // Membuat inisial dari username (Contoh: Yehezkiel -> Y)
+    const initials = user.username.charAt(0).toUpperCase();
+    document.getElementById('userAvatar').textContent = initials;
+}
+
+// ==========================================
 // 1. TANGKAP SEMUA ELEMEN HTML
 // ==========================================
 const notesContainer = document.getElementById('notesContainer');
@@ -8,7 +22,7 @@ const statusFilter = document.getElementById('statusFilter');
 
 const navNotes = document.getElementById('navNotes');
 const navFolders = document.getElementById('navFolders');
-const navCollabs = document.getElementById('navCollabs'); // BARU
+const navCollabs = document.getElementById('navCollabs'); 
 
 const noteModal = document.getElementById('noteModal');
 const noteForm = document.getElementById('noteForm');
@@ -19,16 +33,16 @@ const folderModal = document.getElementById('folderModal');
 const folderForm = document.getElementById('folderForm');
 const cancelFolderBtn = document.getElementById('cancelFolderBtn');
 
-const collabModal = document.getElementById('collabModal'); // BARU
-const collabForm = document.getElementById('collabForm'); // BARU
-const cancelCollabBtn = document.getElementById('cancelCollabBtn'); // BARU
+const collabModal = document.getElementById('collabModal'); 
+const collabForm = document.getElementById('collabForm'); 
+const cancelCollabBtn = document.getElementById('cancelCollabBtn'); 
 
 // ==========================================
 // 2. STATE MANAGEMENT
 // ==========================================
 let allNotes = [];
 let allFolders = [];
-let allCollabs = []; // BARU
+let allCollabs = []; 
 let currentView = 'notes';
 let editingNoteId = null;
 
@@ -83,7 +97,7 @@ navCollabs.addEventListener('click', () => {
     statusFilter.style.display = 'none';
     
     notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat kolaborator...</div>';
-    fetchCollabs(); // FUNGSI INI SEKARANG PASTI ADA!
+    fetchCollabs();
 });
 
 addMainBtn.addEventListener('click', () => {
@@ -126,7 +140,9 @@ statusFilter.addEventListener('change', jalankanFilter);
 // ==========================================
 async function fetchFolders() {
     try {
-        const response = await fetch('/api/folders');
+        const response = await fetch('/api/folders', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         const result = await response.json();
         if (result.success) {
             allFolders = result.data;
@@ -172,7 +188,14 @@ function renderFoldersTemplate(folders) {
 folderForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('folderName').value;
-    await fetch('/api/folders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
+    await fetch('/api/folders', { 
+        method: 'POST', 
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }, 
+        body: JSON.stringify({ name }) 
+    });
     folderModal.style.display = 'none';
     folderForm.reset();
     fetchFolders();
@@ -181,11 +204,13 @@ folderForm.addEventListener('submit', async (e) => {
 cancelFolderBtn.addEventListener('click', () => { folderModal.style.display = 'none'; folderForm.reset(); });
 
 // ==========================================
-// 5. FITUR NOTES (KAMU)
+// 5. FITUR NOTES (AULIA)
 // ==========================================
 async function fetchNotes() {
     try {
-        const response = await fetch('/api/notes');
+        const response = await fetch('/api/notes', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         const result = await response.json();
         if (result.success) {
             allNotes = result.data;
@@ -255,7 +280,14 @@ noteForm.addEventListener('submit', async (e) => {
     try {
         const url = editingNoteId ? `/api/notes/${editingNoteId}` : '/api/notes';
         const method = editingNoteId ? 'PUT' : 'POST';
-        await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        await fetch(url, { 
+            method: method, 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }, 
+            body: JSON.stringify(data) 
+        });
         noteModal.style.display = 'none';
         noteForm.reset();
         editingNoteId = null;
@@ -266,11 +298,13 @@ noteForm.addEventListener('submit', async (e) => {
 cancelNoteBtn.addEventListener('click', () => { noteModal.style.display = 'none'; noteForm.reset(); editingNoteId = null; });
 
 // ==========================================
-// 6. FITUR COLLABS (ANGGOTA KE-4)
+// 6. FITUR COLLABS (KASIH)
 // ==========================================
 async function fetchCollabs() {
     try {
-        const response = await fetch('/api/collabs'); 
+        const response = await fetch('/api/collabs', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        }); 
         const result = await response.json();
         if (result.success) {
             allCollabs = result.data;
@@ -329,7 +363,14 @@ collabForm.addEventListener('submit', async (e) => {
         role: document.getElementById('collabRole').value
     };
     try {
-        await fetch('/api/collabs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        await fetch('/api/collabs', { 
+            method: 'POST', 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }, 
+            body: JSON.stringify(data) 
+        });
         collabModal.style.display = 'none';
         collabForm.reset();
         fetchCollabs(); 
@@ -342,13 +383,29 @@ cancelCollabBtn.addEventListener('click', () => { collabModal.style.display = 'n
 // 7. GLOBAL EVENT (Klik Tombol di Kartu)
 // ==========================================
 notesContainer.addEventListener('click', async (e) => {
+    // HAPUS NOTE
     if (e.target.classList.contains('delete-btn')) {
-        if (confirm("Hapus catatan ini?")) { await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { method: 'DELETE' }); fetchNotes(); }
+        if (confirm("Hapus catatan ini?")) { 
+            await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }); 
+            fetchNotes(); 
+        }
     }
+    // CHECK/UNCHECK NOTE
     if (e.target.classList.contains('note-check')) {
-        await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: e.target.checked ? 'completed' : 'pending' }) });
+        await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { 
+            method: 'PUT', 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            }, 
+            body: JSON.stringify({ status: e.target.checked ? 'completed' : 'pending' }) 
+        });
         fetchNotes();
     }
+    // EDIT NOTE BUKA MODAL
     if (e.target.classList.contains('edit-note-btn')) {
         editingNoteId = e.target.getAttribute('data-id');
         document.getElementById('noteTitle').value = e.target.getAttribute('data-title');
@@ -359,18 +416,39 @@ notesContainer.addEventListener('click', async (e) => {
         document.querySelector('#noteModal h4').textContent = "Edit Catatan";
         noteModal.style.display = 'flex';
     }
+    // HAPUS FOLDER
     if (e.target.classList.contains('delete-folder-btn')) {
-        if (confirm("Hapus folder ini?")) { await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { method: 'DELETE' }); fetchFolders(); fetchNotes(); }
+        if (confirm("Hapus folder ini?")) { 
+            await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }); 
+            fetchFolders(); fetchNotes(); 
+        }
     }
+    // EDIT FOLDER
     if (e.target.classList.contains('edit-folder-btn')) {
         const namaBaru = prompt("Ubah nama folder:", e.target.getAttribute('data-name'));
-        if (namaBaru && namaBaru.trim()) { await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: namaBaru }) }); fetchFolders(); fetchNotes(); }
+        if (namaBaru && namaBaru.trim()) { 
+            await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { 
+                method: 'PUT', 
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                }, 
+                body: JSON.stringify({ name: namaBaru }) 
+            }); 
+            fetchFolders(); fetchNotes(); 
+        }
     }
     
     // LOGIKA HAPUS COLLAB
     if (e.target.classList.contains('delete-collab-btn')) {
         if (confirm("Cabut akses kolaborator ini?")) { 
-            await fetch(`/api/collabs/${e.target.getAttribute('data-id')}`, { method: 'DELETE' }); 
+            await fetch(`/api/collabs/${e.target.getAttribute('data-id')}`, { 
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` } 
+            }); 
             fetchCollabs(); 
         }
     }
@@ -385,3 +463,167 @@ async function startApp() {
     await fetchCollabs(); 
 }
 startApp();
+
+// ==========================================
+// 10. LOGIKA MODAL PENGATURAN & CUSTOM NOTIFIKASI
+// ==========================================
+const userAvatar = document.getElementById('userAvatar');
+const settingsModal = document.getElementById('settingsModal');
+const settingsForm = document.getElementById('settingsForm');
+const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+
+// FUNGSI 1: TOAST NOTIFICATION (Melayang di kanan atas)
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `memoora-toast toast-${type}`;
+    toast.innerHTML = type === 'success' ? `✅ ${message}` : `❌ ${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 2500);
+}
+
+// FUNGSI 2: MODAL KONFIRMASI CUSTOM (Pengganti popup putih)
+function showCustomConfirm(title, text, requireInput = false) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('customConfirmModal');
+        const inputField = document.getElementById('confirmInput');
+        
+        document.getElementById('confirmTitle').textContent = title;
+        document.getElementById('confirmText').textContent = text;
+        
+        if(requireInput) {
+            inputField.style.display = 'block';
+            inputField.value = '';
+        } else {
+            inputField.style.display = 'none';
+        }
+
+        modal.style.display = 'flex';
+
+        // Jika tombol YA ditekan
+        document.getElementById('btnConfirmOk').onclick = () => {
+            if(requireInput) {
+                if(inputField.value === 'HAPUS') {
+                    modal.style.display = 'none';
+                    resolve(true);
+                } else {
+                    showToast('Gagal: Anda harus mengetik HAPUS huruf besar semua!', 'error');
+                }
+            } else {
+                modal.style.display = 'none';
+                resolve(true);
+            }
+        };
+
+        // Jika tombol BATAL ditekan
+        document.getElementById('btnConfirmCancel').onclick = () => {
+            modal.style.display = 'none';
+            resolve(false);
+        };
+    });
+}
+
+// Buka modal pengaturan
+if (userAvatar && settingsModal) {
+    userAvatar.addEventListener('click', () => {
+        document.getElementById('editUsername').value = user.username;
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editPassword').value = ''; 
+        settingsModal.style.display = 'flex';
+    });
+}
+
+// Tutup modal pengaturan
+if (closeSettingsBtn) {
+    closeSettingsBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'none';
+    });
+}
+
+// Submit Edit Profil
+if (settingsForm) {
+    settingsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newName = document.getElementById('editUsername').value;
+        const newEmail = document.getElementById('editEmail').value;
+        const newPassword = document.getElementById('editPassword').value;
+
+        try {
+            const response = await fetch('/api/users/profile', {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ 
+                    id: user.id, username: newName, email: newEmail, password: newPassword 
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast("Profil diperbarui! Silakan login kembali.", "success");
+                setTimeout(() => {
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                }, 1500);
+            } else {
+                showToast(result.message, "error");
+            }
+        } catch (error) { 
+            showToast("Terjadi kesalahan server saat update.", "error"); 
+        }
+    });
+}
+
+// Tombol Logout
+document.getElementById('logoutSettingsBtn').addEventListener('click', async () => {
+    settingsModal.style.display = 'none'; 
+    
+    // Panggil modal custom
+    const yakin = await showCustomConfirm('Logout', 'Yakin ingin keluar dari sesi Memoora saat ini?');
+    
+    if (yakin) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    } else {
+        settingsModal.style.display = 'flex'; 
+    }
+});
+
+// Tombol Hapus Akun
+document.getElementById('deleteAccountSettingsBtn').addEventListener('click', async () => {
+    settingsModal.style.display = 'none'; 
+    
+    const yakin = await showCustomConfirm('Hapus Akun', 'Menghapus akun akan memusnahkan seluruh catatan dan folder Anda secara permanen. Lanjutkan?');
+    
+    if (yakin) {
+        const konfirmasiAkhir = await showCustomConfirm('Konfirmasi Akhir', 'Ketik kata HAPUS di bawah ini untuk memusnahkan akun:', true);
+        
+        if (konfirmasiAkhir) {
+            try {
+                const response = await fetch(`/api/users/${user.id}`, { 
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast("Akun berhasil dimusnahkan. Selamat tinggal!", "success");
+                    setTimeout(() => {
+                        localStorage.clear();
+                        window.location.href = 'login.html';
+                    }, 1500);
+                }
+            } catch (error) { 
+                showToast("Gagal menghapus akun karena masalah server.", "error"); 
+            }
+        } else {
+            settingsModal.style.display = 'flex';
+        }
+    } else {
+        settingsModal.style.display = 'flex';
+    }
+});

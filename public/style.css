@@ -71,4 +71,75 @@ body, .bg-body-tertiary {
     background: rgba(19, 19, 19, 0.85);
     display: flex; justify-content: center; align-items: center;
     z-index: 1050;
+<<<<<<< HEAD
+=======
+}
+/* Style untuk Inisial Profil */
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background-color: var(--accent-primary);
+    color: var(--bg-main);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.user-avatar:hover {
+    border-color: var(--text-main);
+    transform: scale(1.05);
+}
+
+.dropdown-item {
+    transition: 0.2s;
+    padding: 0.6rem 1.2rem;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(198, 77, 49, 0.1) !important;
+    color: var(--accent-primary) !important;
+}
+
+/* ========================================== */
+/* CUSTOM TOAST NOTIFICATION (Pengganti Alert)*/
+/* ========================================== */
+.memoora-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    z-index: 9999;
+    transform: translateX(150%);
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.memoora-toast.show {
+    transform: translateX(0);
+}
+
+.toast-success {
+    background: rgba(46, 213, 115, 0.15);
+    border: 1px solid #2ed573;
+}
+
+.toast-error {
+    background: rgba(255, 71, 87, 0.15);
+    border: 1px solid #ff4757;
+>>>>>>> c73987a078e3ec2ffa312d3f81ba1352dbda5bf3
 }
