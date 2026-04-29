@@ -1,21 +1,13 @@
 // controllers/collaborationController.js
 import Collaboration from "../models/Collaboration.js";
-<<<<<<< HEAD
-=======
-// import user dari tabel user
+// import user dari tabel user untuk validasi
 import User from "../models/User.js";
->>>>>>> c73987a078e3ec2ffa312d3f81ba1352dbda5bf3
 
 // CREATE - Undang user
 export const addCollaborator = async (req, res) => {
     try {
         const { email, role } = req.body;
 
-<<<<<<< HEAD
-        const newCollab = await Collaboration.create({ email, role });
-        
-        // Sesuaikan dengan format yang ditunggu app.js
-=======
         // 1. CEK KE DATABASE USER: Apakah email terdaftar?
         const targetUser = await User.findOne({ where: { email: email } });
         
@@ -36,10 +28,9 @@ export const addCollaborator = async (req, res) => {
             });
         }
 
-        // 3. JIKA LOLOS SEMUA CEK, BARU SIMPAN (Kode Asli Kasih)
+        // 3. JIKA LOLOS SEMUA CEK, BARU SIMPAN
         const newCollab = await Collaboration.create({ email, role });
         
->>>>>>> c73987a078e3ec2ffa312d3f81ba1352dbda5bf3
         res.status(201).json({ success: true, data: newCollab });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

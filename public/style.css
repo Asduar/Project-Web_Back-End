@@ -71,8 +71,6 @@ body, .bg-body-tertiary {
     background: rgba(19, 19, 19, 0.85);
     display: flex; justify-content: center; align-items: center;
     z-index: 1050;
-<<<<<<< HEAD
-=======
 }
 /* Style untuk Inisial Profil */
 .user-avatar {
@@ -141,5 +139,4 @@ body, .bg-body-tertiary {
 .toast-error {
     background: rgba(255, 71, 87, 0.15);
     border: 1px solid #ff4757;
->>>>>>> c73987a078e3ec2ffa312d3f81ba1352dbda5bf3
 }
