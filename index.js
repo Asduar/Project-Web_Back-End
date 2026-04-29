@@ -1,10 +1,9 @@
 import express from "express";
 import noteRoutes from './routes/notesRoutes.js'; //aulia
-import userRoutes from './routes/userRoutes.js'; //yehezkiel
 import folderRoutes from './routes/folderRoutes.js'; //fadil
+import collaborationRoutes from "./routes/collaborationRoutes.js"; //kasih
 import db from "./database.js";
 import Note from "./models/Note.js";
-import User from "./models/User.js";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -15,11 +14,11 @@ const __dirname = dirname(__fileName);
 
 app.use(express.static(join(__dirname, "public")));
 
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/notes', noteRoutes); //aulia
-app.use('/api/users', userRoutes); //yehezkiel
 app.use('/api/folders', folderRoutes); //fadil
+app.use("/api/collaborations", collaborationRoutes); //kasih
 
 try {
     await db.authenticate();
@@ -30,8 +29,8 @@ try {
 }
 
 app.get("/", (req, res) => {
-  const index = join(__dirname, "public", "index.html");
-  res.sendFile(index);
+    const index = join(__dirname, "public", "index.html");
+    res.sendFile(index);
 });
 
 app.get('/api/status', (req, res) => {

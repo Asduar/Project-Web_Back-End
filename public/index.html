@@ -26,18 +26,18 @@
                     <button id="addNoteBtn" class="btn-gold blink-bg">Catatan Baru</button>
                 </div>
                 
-                <div class="user-profile" onclick="openSettings()" title="Pengaturan Akun" style="cursor: pointer;">
-                    <img src="" id="userAvatar" alt="User Profile" class="avatar">
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=FFD700&color=000&bold=true" alt="User Profile" class="avatar">
                 </div>
             </div>
         </header>
 
         <nav class="glass-nav">
-            <button class="nav-btn active">Notes</button>
-            <button class="nav-btn">Folders</button>
-            <button class="nav-btn">Collabs</button>
-        </nav>
+            <button id="navNotes" class="nav-btn active">Notes</button>
+            <button id="navFolders" class="nav-btn">Folders</button>
+            <button class="nav-btn">Collabs</button> </nav>
 
+        <main id="notesContainer" class="masonry-grid">
         <main id="notesContainer" class="masonry-grid">
             </main>
     </div>
@@ -55,6 +55,7 @@
                         <option value="normal">Normal</option>
                         <option value="urgent">Urgent</option>
                         <option value="review">Review</option>
+                        <option value="project">Project</option>
                     </select>
                 </div>
 
@@ -66,34 +67,15 @@
         </div>
     </div>
 
-    <div id="settingsModal" class="modal-overlay" style="display: none;">
+    <div id="folderModal" class="modal-overlay" style="display: none;">
         <div class="modal-glass">
-            <h2 class="blink-gold">Pengaturan Akun</h2>
-            <form id="settingsForm">
-                <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--gold-primary); font-size: 0.8rem; display: block; margin-bottom: 5px;">Username Baru</label>
-                    <input type="text" id="editUsername" class="glass-input" required>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--gold-primary); font-size: 0.8rem; display: block; margin-bottom: 5px;">Email Baru</label>
-                    <input type="email" id="editEmail" class="glass-input" required>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="color: var(--gold-primary); font-size: 0.8rem; display: block; margin-bottom: 5px;">Password Baru (Kosongkan jika tidak ganti)</label>
-                    <input type="password" id="editPassword" class="glass-input" placeholder="••••••••">
-                </div>
+            <h2>📁 Buat Folder Baru</h2>
+            <form id="folderForm">
+                <input type="text" id="folderName" class="glass-input" placeholder="Nama Folder (Contoh: Kuliah, Pribadi, Project)" required>
                 
-                <div class="modal-actions" style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; gap: 10px; width: 100%;">
-                        <button type="button" onclick="closeSettings()" class="btn-ghost" style="flex: 1;">Batal</button>
-                        <button type="submit" class="btn-gold blink-bg" style="flex: 1;">Simpan</button>
-                    </div>
-                    <hr style="border: 0.5px solid rgba(255,215,0,0.1); width: 100%; margin: 5px 0;">
-                    
-                    <div style="display: flex; gap: 10px; width: 100%;">
-                        <button type="button" onclick="logout()" class="btn-ghost" style="flex: 1; border-color: var(--gold-primary);">Logout</button>
-                        <button type="button" onclick="handleDeleteAccount()" class="btn-gold" style="background: rgba(255, 71, 87, 0.2); color: #ff4757; border: 1px solid #ff4757; flex: 1;">Hapus Akun</button>
-                    </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelFolderBtn" class="btn-ghost">Batal</button>
+                    <button type="submit" class="btn-gold">Simpan Folder</button>
                 </div>
             </form>
         </div>
