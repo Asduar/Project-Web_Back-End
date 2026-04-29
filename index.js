@@ -36,7 +36,11 @@ app.get('/api/status', (req, res) => {
 });
 
 
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+db.sync({ alter: true })
+    .then(() => {
+        console.log("Database berhasil disinkronkan!");
+        app.listen(3000, () => console.log("Server berjalan di port 3000"));
+    })
+    .catch((error) => {
+        console.error("Gagal sinkronisasi database:", error);
+    });
