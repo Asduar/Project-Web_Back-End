@@ -1,3 +1,6 @@
+// ==========================================
+// 1. TANGKAP SEMUA ELEMEN HTML
+// ==========================================
 const notesContainer = document.getElementById('notesContainer');
 const addMainBtn = document.getElementById('addNoteBtn');
 const searchInput = document.getElementById('searchInput');
@@ -5,28 +8,41 @@ const statusFilter = document.getElementById('statusFilter');
 
 const navNotes = document.getElementById('navNotes');
 const navFolders = document.getElementById('navFolders');
+const navCollabs = document.getElementById('navCollabs'); // BARU
 
 const noteModal = document.getElementById('noteModal');
 const noteForm = document.getElementById('noteForm');
 const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+const noteFolderDropdown = document.getElementById('noteFolder');
 
 const folderModal = document.getElementById('folderModal');
 const folderForm = document.getElementById('folderForm');
 const cancelFolderBtn = document.getElementById('cancelFolderBtn');
 
-const noteFolderDropdown = document.getElementById('noteFolder');
+const collabModal = document.getElementById('collabModal'); // BARU
+const collabForm = document.getElementById('collabForm'); // BARU
+const cancelCollabBtn = document.getElementById('cancelCollabBtn'); // BARU
 
+// ==========================================
+// 2. STATE MANAGEMENT
+// ==========================================
 let allNotes = [];
 let allFolders = [];
+let allCollabs = []; // BARU
 let currentView = 'notes';
 let editingNoteId = null;
 
+// ==========================================
+// 3. LOGIKA NAVIGASI
+// ==========================================
 navNotes.addEventListener('click', () => {
     currentView = 'notes';
     navNotes.classList.add('active', 'text-gold');
     navNotes.classList.remove('text-secondary');
     navFolders.classList.remove('active', 'text-gold');
     navFolders.classList.add('text-secondary');
+    navCollabs.classList.remove('active', 'text-gold');
+    navCollabs.classList.add('text-secondary');
     
     addMainBtn.textContent = 'Catatan Baru';
     searchInput.placeholder = 'Cari catatan...';
@@ -42,6 +58,8 @@ navFolders.addEventListener('click', () => {
     navFolders.classList.remove('text-secondary');
     navNotes.classList.remove('active', 'text-gold');
     navNotes.classList.add('text-secondary');
+    navCollabs.classList.remove('active', 'text-gold');
+    navCollabs.classList.add('text-secondary');
     
     addMainBtn.textContent = 'Folder Baru';
     searchInput.placeholder = 'Cari folder...';
@@ -49,6 +67,23 @@ navFolders.addEventListener('click', () => {
     
     notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat folder...</div>';
     fetchFolders();
+});
+
+navCollabs.addEventListener('click', () => {
+    currentView = 'collabs';
+    navCollabs.classList.add('active', 'text-gold');
+    navCollabs.classList.remove('text-secondary');
+    navNotes.classList.remove('active', 'text-gold');
+    navNotes.classList.add('text-secondary');
+    navFolders.classList.remove('active', 'text-gold');
+    navFolders.classList.add('text-secondary');
+    
+    addMainBtn.textContent = 'Undang Teman';
+    searchInput.placeholder = 'Cari email...';
+    statusFilter.style.display = 'none';
+    
+    notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat kolaborator...</div>';
+    fetchCollabs(); // FUNGSI INI SEKARANG PASTI ADA!
 });
 
 addMainBtn.addEventListener('click', () => {
@@ -59,6 +94,8 @@ addMainBtn.addEventListener('click', () => {
         noteModal.style.display = 'flex';
     } else if (currentView === 'folders') {
         folderModal.style.display = 'flex';
+    } else if (currentView === 'collabs') {
+        collabModal.style.display = 'flex';
     }
 });
 
@@ -75,28 +112,32 @@ function jalankanFilter() {
     } else if (currentView === 'folders') {
         const dataTersaring = allFolders.filter(folder => folder.name.toLowerCase().includes(kataKunci));
         renderFoldersTemplate(dataTersaring);
+    } else if (currentView === 'collabs') {
+        const dataTersaring = allCollabs.filter(collab => collab.email.toLowerCase().includes(kataKunci));
+        renderCollabsTemplate(dataTersaring);
     }
 }
 
 searchInput.addEventListener('input', jalankanFilter);
 statusFilter.addEventListener('change', jalankanFilter);
 
+// ==========================================
+// 4. FITUR FOLDERS (FADIL)
+// ==========================================
 async function fetchFolders() {
     try {
         const response = await fetch('/api/folders');
         const result = await response.json();
         if (result.success) {
             allFolders = result.data;
-            updateFolderDropdown();
+            updateFolderDropdown(); 
             if (currentView === 'folders') jalankanFilter();
         }
-    } catch (error) {
-        console.error("Gagal mengambil folder:", error);
-    }
+    } catch (error) { console.error("Gagal mengambil folder:", error); }
 }
 
 function updateFolderDropdown() {
-    noteFolderDropdown.innerHTML = '<option value="">Pilih Folder (Opsional)</option>';
+    noteFolderDropdown.innerHTML = '<option value="">-- Pilih Folder (Opsional) --</option>';
     allFolders.forEach(folder => {
         noteFolderDropdown.innerHTML += `<option value="${folder.id}">${folder.name}</option>`;
     });
@@ -137,19 +178,20 @@ folderForm.addEventListener('submit', async (e) => {
     fetchFolders();
 });
 
-cancelFolderBtn.addEventListener('click', () => { folderModal.style.display = 'none'; });
+cancelFolderBtn.addEventListener('click', () => { folderModal.style.display = 'none'; folderForm.reset(); });
 
+// ==========================================
+// 5. FITUR NOTES (KAMU)
+// ==========================================
 async function fetchNotes() {
     try {
         const response = await fetch('/api/notes');
         const result = await response.json();
         if (result.success) {
             allNotes = result.data;
-            jalankanFilter();
+            if (currentView === 'notes') jalankanFilter();
         }
-    } catch (error) {
-        console.error("Gagal mengambil catatan:", error);
-    }
+    } catch (error) { console.error("Gagal mengambil catatan:", error); }
 }
 
 function renderNotesTemplate(data) {
@@ -159,11 +201,9 @@ function renderNotesTemplate(data) {
         notesContainer.innerHTML = `<div class="col-12 text-center mt-5 pt-5"><h1 style="font-size: 4rem; opacity: 0.3;">📝</h1><h5 class="text-gold mt-3">Belum ada catatan</h5></div>`;
         return;
     }
-
     data.forEach(note => {
         const isChecked = note.status === 'completed' ? 'checked' : '';
         const titleStyle = note.status === 'completed' ? 'text-decoration-line-through text-secondary' : 'text-light';
-
         let tagBg, tagColor;
         switch(note.tag?.toLowerCase()) {
             case 'urgent': tagBg = 'rgba(198, 77, 49, 0.1)'; tagColor = '#c64d31'; break;
@@ -172,7 +212,6 @@ function renderNotesTemplate(data) {
             case 'project': tagBg = 'rgba(243, 156, 18, 0.1)'; tagColor = '#f39c12'; break;
             default: tagBg = 'transparent'; tagColor = '#f3ede3';
         }
-
         const folderTerkait = allFolders.find(f => f.id === note.folderId);
         const namaFolderRender = folderTerkait ? `📁 ${folderTerkait.name}` : 'Tanpa Folder';
 
@@ -194,7 +233,6 @@ function renderNotesTemplate(data) {
                         </div>
                     </div>
                     <p class="card-text text-secondary flex-grow-1">${note.description || ''}</p>
-                    
                     <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top border-secondary">
                         <span class="badge" style="background-color: ${tagBg}; color: ${tagColor}; border: 1px solid ${tagColor};">${note.tag ? note.tag.toUpperCase() : 'NO TAG'}</span>
                         <small class="text-gold fw-bold">${namaFolderRender}</small>
@@ -212,9 +250,8 @@ noteForm.addEventListener('submit', async (e) => {
         description: document.getElementById('noteDesc').value,
         dueDate: document.getElementById('noteDate').value,
         tag: document.getElementById('noteTag').value,
-        folderId: document.getElementById('noteFolder').value || null
+        folderId: document.getElementById('noteFolder').value || null 
     };
-
     try {
         const url = editingNoteId ? `/api/notes/${editingNoteId}` : '/api/notes';
         const method = editingNoteId ? 'PUT' : 'POST';
@@ -228,14 +265,88 @@ noteForm.addEventListener('submit', async (e) => {
 
 cancelNoteBtn.addEventListener('click', () => { noteModal.style.display = 'none'; noteForm.reset(); editingNoteId = null; });
 
+// ==========================================
+// 6. FITUR COLLABS (ANGGOTA KE-4)
+// ==========================================
+async function fetchCollabs() {
+    try {
+        const response = await fetch('/api/collabs'); 
+        const result = await response.json();
+        if (result.success) {
+            allCollabs = result.data;
+            if (currentView === 'collabs') jalankanFilter(); 
+        } else {
+            if (currentView === 'collabs') {
+                notesContainer.innerHTML = `<div class="col-12 text-center text-danger mt-5">Gagal memuat: ${result.message}</div>`;
+            }
+        }
+    } catch (error) {
+        if (currentView === 'collabs') {
+            notesContainer.innerHTML = '<div class="col-12 text-center text-danger mt-5">Koneksi ke server API Collabs gagal.</div>';
+        } else {
+            console.warn("Peringatan: API Collabs belum siap.");
+        }
+    }
+}
+
+function renderCollabsTemplate(collabs) {
+    if (currentView !== 'collabs') return;
+    notesContainer.innerHTML = '';
+
+    if (collabs.length === 0) {
+        notesContainer.innerHTML = `
+            <div class="col-12 text-center mt-5 pt-5">
+                <h1 style="font-size: 4rem; opacity: 0.3;">🤝</h1>
+                <h5 class="text-gold mt-3">Belum ada kolaborator</h5>
+                <p class="text-secondary">Klik tombol "Undang Teman" di pojok kanan atas.</p>
+            </div>`;
+        return;
+    }
+
+    collabs.forEach(collab => {
+        const roleBg = collab.role === 'editor' ? 'rgba(198, 77, 49, 0.1)' : 'rgba(30, 144, 255, 0.1)';
+        const roleColor = collab.role === 'editor' ? '#c64d31' : '#1e90ff';
+
+        const card = document.createElement('div');
+        card.className = 'col-md-3 col-sm-6 mb-4';
+        card.innerHTML = `
+            <div class="card bg-dark border-secondary shadow-sm h-100">
+                <div class="card-body d-flex flex-column align-items-center text-center">
+                    <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">👤</div>
+                    <h6 class="card-title text-light fw-bold mb-1 w-100 text-truncate" title="${collab.email}">${collab.email}</h6>
+                    <span class="badge mb-3" style="background-color: ${roleBg}; color: ${roleColor}; border: 1px solid ${roleColor};">${collab.role.toUpperCase()}</span>
+                    <button class="btn btn-sm btn-outline-danger fw-bold w-100 mt-auto delete-collab-btn" data-id="${collab.id}">Cabut Akses</button>
+                </div>
+            </div>`;
+        notesContainer.appendChild(card);
+    });
+}
+
+collabForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        email: document.getElementById('collabEmail').value,
+        role: document.getElementById('collabRole').value
+    };
+    try {
+        await fetch('/api/collabs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        collabModal.style.display = 'none';
+        collabForm.reset();
+        fetchCollabs(); 
+    } catch (error) { console.error("Error:", error); }
+});
+
+cancelCollabBtn.addEventListener('click', () => { collabModal.style.display = 'none'; collabForm.reset(); });
+
+// ==========================================
+// 7. GLOBAL EVENT (Klik Tombol di Kartu)
+// ==========================================
 notesContainer.addEventListener('click', async (e) => {
     if (e.target.classList.contains('delete-btn')) {
-        const id = e.target.getAttribute('data-id');
-        if (confirm("Hapus catatan ini?")) { await fetch(`/api/notes/${id}`, { method: 'DELETE' }); fetchNotes(); }
+        if (confirm("Hapus catatan ini?")) { await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { method: 'DELETE' }); fetchNotes(); }
     }
     if (e.target.classList.contains('note-check')) {
-        const id = e.target.getAttribute('data-id');
-        await fetch(`/api/notes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: e.target.checked ? 'completed' : 'pending' }) });
+        await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: e.target.checked ? 'completed' : 'pending' }) });
         fetchNotes();
     }
     if (e.target.classList.contains('edit-note-btn')) {
@@ -244,23 +355,33 @@ notesContainer.addEventListener('click', async (e) => {
         document.getElementById('noteDesc').value = e.target.getAttribute('data-desc');
         document.getElementById('noteDate').value = e.target.getAttribute('data-date');
         document.getElementById('noteTag').value = e.target.getAttribute('data-tag');
-        document.getElementById('noteFolder').value = e.target.getAttribute('data-folder');
+        document.getElementById('noteFolder').value = e.target.getAttribute('data-folder'); 
         document.querySelector('#noteModal h4').textContent = "Edit Catatan";
         noteModal.style.display = 'flex';
     }
     if (e.target.classList.contains('delete-folder-btn')) {
-        const id = e.target.getAttribute('data-id');
-        if (confirm("Hapus folder ini?")) { await fetch(`/api/folders/${id}`, { method: 'DELETE' }); fetchFolders(); fetchNotes(); }
+        if (confirm("Hapus folder ini?")) { await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { method: 'DELETE' }); fetchFolders(); fetchNotes(); }
     }
     if (e.target.classList.contains('edit-folder-btn')) {
-        const id = e.target.getAttribute('data-id');
         const namaBaru = prompt("Ubah nama folder:", e.target.getAttribute('data-name'));
-        if (namaBaru && namaBaru.trim()) { await fetch(`/api/folders/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: namaBaru }) }); fetchFolders(); fetchNotes(); }
+        if (namaBaru && namaBaru.trim()) { await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: namaBaru }) }); fetchFolders(); fetchNotes(); }
+    }
+    
+    // LOGIKA HAPUS COLLAB
+    if (e.target.classList.contains('delete-collab-btn')) {
+        if (confirm("Cabut akses kolaborator ini?")) { 
+            await fetch(`/api/collabs/${e.target.getAttribute('data-id')}`, { method: 'DELETE' }); 
+            fetchCollabs(); 
+        }
     }
 });
 
+// ==========================================
+// 8. JALANKAN SAAT WEB PERTAMA DIBUKA
+// ==========================================
 async function startApp() {
-    await fetchFolders();
-    await fetchNotes();
+    await fetchFolders(); 
+    await fetchNotes();   
+    await fetchCollabs(); 
 }
 startApp();

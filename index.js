@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api/notes', noteRoutes); //aulia
 app.use('/api/folders', folderRoutes); //fadil
-app.use("/api/collaborations", collaborationRoutes); //kasih
+app.use("/api/collabs", collaborationRoutes); //kasih
 
 try {
     await db.authenticate();

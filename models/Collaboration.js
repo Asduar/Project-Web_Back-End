@@ -9,22 +9,19 @@ const Collaboration = db.define("Collaboration", {
         autoIncrement: true,
         primaryKey: true,
     },
-    noteId: {
-        type: DataTypes.INTEGER,
+    // Ganti userId menjadi email agar sesuai dengan input Frontend
+    email: {
+        type: DataTypes.STRING,
         allowNull: false,
     },
-    userId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-    },
+    // Samakan nama ENUM dengan opsi dropdown di Frontend
     role: {
-        type: DataTypes.ENUM("view", "edit"),
-        defaultValue: "view",
+        type: DataTypes.ENUM("viewer", "editor"),
+        defaultValue: "viewer",
     },
-},
-    {
-        tableName: 'collaboration',
-        timestamps: true
-    });
+}, {
+    tableName: 'collaboration',
+    timestamps: true
+});
 
 export default Collaboration;

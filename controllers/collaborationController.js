@@ -4,49 +4,28 @@ import Collaboration from "../models/Collaboration.js";
 // CREATE - Undang user
 export const addCollaborator = async (req, res) => {
     try {
-        const { noteId, userId, role } = req.body;
+        const { email, role } = req.body;
 
-        const newCollab = await Collaboration.create({
-            noteId,
-            userId,
-            role,
-        });
-
-        res.status(201).json(newCollab);
+        const newCollab = await Collaboration.create({ email, role });
+        
+        // Sesuaikan dengan format yang ditunggu app.js
+        res.status(201).json({ success: true, data: newCollab });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// READ - Ambil semua collaborator di note
+// READ - Ambil semua collaborator (Hapus filter noteId agar muncul di Global Tab)
 export const getCollaborators = async (req, res) => {
     try {
-        const { noteId } = req.params;
-
         const collabs = await Collaboration.findAll({
-            where: { noteId },
+            order: [['createdAt', 'DESC']]
         });
-
-        res.json(collabs);
+        
+        // Sesuaikan dengan format yang ditunggu app.js
+        res.status(200).json({ success: true, data: collabs });
     } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
-
-// UPDATE - Ubah role
-export const updateRole = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { role } = req.body;
-
-        await Collaboration.update(
-            { role },
-            { where: { id } }
-        );
-
-        res.json({ message: "Role updated" });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
 
@@ -54,13 +33,9 @@ export const updateRole = async (req, res) => {
 export const removeCollaborator = async (req, res) => {
     try {
         const { id } = req.params;
-
-        await Collaboration.destroy({
-            where: { id },
-        });
-
-        res.json({ message: "Collaborator removed" });
+        await Collaboration.destroy({ where: { id } });
+        res.status(200).json({ success: true, message: "Collaborator removed" });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 };
