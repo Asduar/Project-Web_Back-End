@@ -362,8 +362,9 @@ collabForm.addEventListener('submit', async (e) => {
         email: document.getElementById('collabEmail').value,
         role: document.getElementById('collabRole').value
     };
+
     try {
-        await fetch('/api/collabs', { 
+        const response = await fetch('/api/collabs', { 
             method: 'POST', 
             headers: { 
                 'Content-Type': 'application/json',
@@ -371,10 +372,24 @@ collabForm.addEventListener('submit', async (e) => {
             }, 
             body: JSON.stringify(data) 
         });
-        collabModal.style.display = 'none';
-        collabForm.reset();
-        fetchCollabs(); 
-    } catch (error) { console.error("Error:", error); }
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Jika berhasil (Email ditemukan & terdaftar)
+            showToast("Berhasil mengundang kolaborator!", "success");
+            collabModal.style.display = 'none';
+            collabForm.reset();
+            fetchCollabs(); 
+        } else {
+            // Jika gagal (Email tidak ada atau sudah pernah diundang)
+            // Pesan ini diambil langsung dari hasil pengecekan di Backend
+            showToast(result.message, "error");
+        }
+    } catch (error) { 
+        console.error("Error:", error);
+        showToast("Terjadi kesalahan koneksi ke server.", "error");
+    }
 });
 
 cancelCollabBtn.addEventListener('click', () => { collabModal.style.display = 'none'; collabForm.reset(); });

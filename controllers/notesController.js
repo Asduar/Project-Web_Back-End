@@ -6,7 +6,11 @@ export const getAllNotes = async (req, res) => {
     const status = req.query.status;
     const search = req.query.search;
     
-    // Hanya ambil catatan milik user yang sedang login
+    // PAGINATION: Ambil page dan limit dari URL, beri nilai default jika kosong
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    
     let condition = { userId: req.user.id }; 
 
     if (status && status !== 'all') {
@@ -20,12 +24,24 @@ export const getAllNotes = async (req, res) => {
       ];
     }
 
-    const data = await Note.findAll({ 
+    // Gunakan findAndCountAll untuk Pagination
+    const data = await Note.findAndCountAll({ 
         where: condition,
-        order: [['createdAt', 'DESC']]
+        order: [['createdAt', 'DESC']],
+        limit: limit,
+        offset: offset
     });
 
-    res.status(200).json({ success: true, message: "Catatan berhasil diambil", data: data });
+    res.status(200).json({ 
+        success: true, 
+        message: "Catatan berhasil diambil", 
+        data: data.rows,
+        pagination: {
+            totalItems: data.count,
+            totalPages: Math.ceil(data.count / limit),
+            currentPage: page
+        }
+    });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ success: false, message: "Internal server error" });
