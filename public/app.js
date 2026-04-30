@@ -45,6 +45,7 @@ let allFolders = [];
 let allCollabs = []; 
 let currentView = 'notes';
 let editingNoteId = null;
+let editingFolderId = null;
 
 // ==========================================
 // 3. LOGIKA NAVIGASI
@@ -188,21 +189,40 @@ function renderFoldersTemplate(folders) {
 folderForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('folderName').value;
-    await fetch('/api/folders', { 
-        method: 'POST', 
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        }, 
-        body: JSON.stringify({ name }) 
-    });
-    folderModal.style.display = 'none';
-    folderForm.reset();
-    fetchFolders();
+
+    try {
+        const url = editingFolderId 
+            ? `/api/folders/${editingFolderId}` 
+            : '/api/folders';
+
+        const method = editingFolderId ? 'PUT' : 'POST';
+
+        await fetch(url, { 
+            method: method, 
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }, 
+            body: JSON.stringify({ name }) 
+        });
+
+        folderModal.style.display = 'none';
+        folderForm.reset();
+        editingFolderId = null;
+
+        fetchFolders();
+        fetchNotes();
+
+    } catch (error) {
+        console.error("Error folder:", error);
+    }
 });
 
-cancelFolderBtn.addEventListener('click', () => { folderModal.style.display = 'none'; folderForm.reset(); });
-
+cancelFolderBtn.addEventListener('click', () => {
+    folderModal.style.display = 'none';
+    folderForm.reset();
+    editingFolderId = null;
+});
 // ==========================================
 // 5. FITUR NOTES (AULIA)
 // ==========================================
@@ -433,28 +453,33 @@ notesContainer.addEventListener('click', async (e) => {
     }
     // HAPUS FOLDER
     if (e.target.classList.contains('delete-folder-btn')) {
-        if (confirm("Hapus folder ini?")) { 
-            await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { 
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            }); 
-            fetchFolders(); fetchNotes(); 
-        }
+        const folderId = e.target.getAttribute('data-id');
+        
+        // Langsung hajar hapus ke API
+        await fetch(`/api/folders/${folderId}`, { 
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        }); 
+        
+        // Refresh data agar folder hilang dari layar
+        fetchFolders(); 
+        fetchNotes(); 
+        
+        // Opsional: Beri toast sukses agar user tidak bingung kenapa foldernya hilang
+        if (typeof showToast === "function") showToast('Folder berhasil dihapus', 'success');
     }
     // EDIT FOLDER
     if (e.target.classList.contains('edit-folder-btn')) {
-        const namaBaru = prompt("Ubah nama folder:", e.target.getAttribute('data-name'));
-        if (namaBaru && namaBaru.trim()) { 
-            await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { 
-                method: 'PUT', 
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
-                }, 
-                body: JSON.stringify({ name: namaBaru }) 
-            }); 
-            fetchFolders(); fetchNotes(); 
-        }
+        editingFolderId = e.target.getAttribute('data-id');
+        
+        // Isi input nama folder dari data attribute tombol
+        document.getElementById('folderName').value = e.target.getAttribute('data-name');
+
+        // Ubah judul modal agar user tahu ini mode Edit
+        const folderTitle = document.getElementById('folderModalTitle') || document.querySelector('#folderModal h4');
+        if (folderTitle) folderTitle.textContent = "Edit Folder";
+
+        folderModal.style.display = 'flex';
     }
     
     // LOGIKA HAPUS COLLAB
