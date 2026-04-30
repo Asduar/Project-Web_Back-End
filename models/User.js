@@ -13,14 +13,14 @@ const User = db.define('users', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true // Agar satu email hanya bisa digunakan untuk satu akun
+        unique: true
     },
     password: {
         type: DataTypes.STRING,
         allowNull: false
     }
 }, {
-    freezeTableName: true // Memastikan nama tabel tetap 'users', tidak berubah jadi jamak otomatis
+    freezeTableName: true
 });
 
 User.hasMany(Note, { foreignKey: 'userId', as: 'notes' });

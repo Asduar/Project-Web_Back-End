@@ -1,14 +1,10 @@
-// controllers/collaborationController.js
 import Collaboration from "../models/Collaboration.js";
-// import user dari tabel user untuk validasi
 import User from "../models/User.js";
 
-// CREATE - Undang user
 export const addCollaborator = async (req, res) => {
     try {
         const { email, role } = req.body;
 
-        // 1. CEK KE DATABASE USER: Apakah email terdaftar?
         const targetUser = await User.findOne({ where: { email: email } });
         
         if (!targetUser) {
@@ -18,7 +14,6 @@ export const addCollaborator = async (req, res) => {
             });
         }
 
-        // 2. CEK DUPLIKASI: Apakah sudah jadi kolaborator?
         const existingCollab = await Collaboration.findOne({ where: { email: email } });
         
         if (existingCollab) {
@@ -28,7 +23,6 @@ export const addCollaborator = async (req, res) => {
             });
         }
 
-        // 3. JIKA LOLOS SEMUA CEK, BARU SIMPAN
         const newCollab = await Collaboration.create({ email, role });
         
         res.status(201).json({ success: true, data: newCollab });
@@ -37,21 +31,18 @@ export const addCollaborator = async (req, res) => {
     }
 };
 
-// READ - Ambil semua collaborator (Hapus filter noteId agar muncul di Global Tab)
 export const getCollaborators = async (req, res) => {
     try {
         const collabs = await Collaboration.findAll({
             order: [['createdAt', 'DESC']]
         });
         
-        // Sesuaikan dengan format yang ditunggu app.js
         res.status(200).json({ success: true, data: collabs });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
 };
 
-// DELETE - Hapus akses
 export const removeCollaborator = async (req, res) => {
     try {
         const { id } = req.params;

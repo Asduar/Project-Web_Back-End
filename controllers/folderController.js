@@ -1,6 +1,5 @@
-import Folder from '../models/Folder.js'; // Gunakan import dan wajib tambah .js
+import Folder from '../models/Folder.js'; 
 
-// 1. READ: Mengambil semua folder
 const getAllFolders = async (req, res) => {
     try {
         const folders = await Folder.findAll({ where: { userId: req.user.id } });
@@ -10,7 +9,6 @@ const getAllFolders = async (req, res) => {
     }
 };
 
-// 2. CREATE: Membuat folder baru
 const createFolder = async (req, res) => {
     try {
         const { name } = req.body;
@@ -21,7 +19,6 @@ const createFolder = async (req, res) => {
     }
 };
 
-// 3. UPDATE: Mengubah nama folder
 const updateFolder = async (req, res) => {
     try {
         const folderId = req.params.id;
@@ -38,7 +35,6 @@ const updateFolder = async (req, res) => {
     }
 };
 
-// 4. DELETE: Menghapus folder
 const deleteFolder = async (req, res) => {
     try {
         const folderId = req.params.id;
@@ -53,9 +49,6 @@ const deleteFolder = async (req, res) => {
     }
 };
 
-// ==========================================
-// DIEKSPOR SEKALIGUS MENGGUNAKAN ES MODULES
-// ==========================================
 export {
     getAllFolders,
     createFolder,

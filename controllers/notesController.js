@@ -6,7 +6,6 @@ export const getAllNotes = async (req, res) => {
     const status = req.query.status;
     const search = req.query.search;
     
-    // PAGINATION: Ambil page dan limit dari URL, beri nilai default jika kosong
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
@@ -24,7 +23,6 @@ export const getAllNotes = async (req, res) => {
       ];
     }
 
-    // Gunakan findAndCountAll untuk Pagination
     const data = await Note.findAndCountAll({ 
         where: condition,
         order: [['createdAt', 'DESC']],
@@ -51,7 +49,6 @@ export const getAllNotes = async (req, res) => {
 export const getNoteById = async (req, res) => {
   try {
     const id = req.params.id;
-    // Pastikan ID catatan cocok dan milik user tersebut
     const data = await Note.findOne({ where: { id: id, userId: req.user.id }});
 
     if (!data) return res.status(404).json({ success: false, message: `Catatan tidak ditemukan atau bukan milik Anda` });
@@ -64,7 +61,6 @@ export const getNoteById = async (req, res) => {
 
 export const createNote = async (req, res) => {
   try {
-    // Sisipkan ID user yang sedang login sebelum disimpan ke database
     const noteData = { ...req.body, userId: req.user.id };
     const newNote = await Note.create(noteData); 
 

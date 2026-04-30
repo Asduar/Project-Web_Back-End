@@ -13,7 +13,7 @@ const Folder = db.define('Folder', {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false // Folder wajib punya pemilik
+        allowNull: false
     }
 }, {
     tableName: 'folders',

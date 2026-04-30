@@ -18,7 +18,7 @@ const Note = db.define('Note', {
     },
     userId: {
         type: DataTypes.INTEGER,
-        allowNull: false // Catatan wajib punya pemilik
+        allowNull: false 
     }
 }, {
     tableName: 'notes',

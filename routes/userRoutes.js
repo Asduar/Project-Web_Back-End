@@ -4,9 +4,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 const router = express.Router();
-const JWT_SECRET = "RAHASIA_MEMOORA_2026"; // Ganti dengan secret key kamu
+const JWT_SECRET = "RAHASIA_MEMOORA_2026";
 
-// 1. [CREATE] - Registrasi User Baru
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -35,7 +34,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// 2. [READ] - Login User
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -50,7 +48,6 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ success: false, message: "Password salah!" });
         }
 
-        // Generate Token JWT
         const token = jwt.sign(
             { id: user.id, username: user.username },
             JWT_SECRET,
@@ -68,7 +65,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// 3. [UPDATE] - Perbarui Profil atau Password
 router.put('/profile', async (req, res) => {
     try {
         const { id, username, email, password } = req.body;
@@ -80,7 +76,6 @@ router.put('/profile', async (req, res) => {
 
         let updatedData = { username, email };
 
-        // Jika ingin ganti password, hash password baru
         if (password && password.trim() !== "") {
             const salt = await bcrypt.genSalt(10);
             updatedData.password = await bcrypt.hash(password, salt);
@@ -98,7 +93,6 @@ router.put('/profile', async (req, res) => {
     }
 });
 
-// 4. [DELETE] - Hapus Akun Permanen
 router.delete('/:id', async (req, res) => {
     try {
         const user = await User.findByPk(req.params.id);

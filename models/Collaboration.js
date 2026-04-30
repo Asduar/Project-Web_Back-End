@@ -9,12 +9,10 @@ const Collaboration = db.define("Collaboration", {
         autoIncrement: true,
         primaryKey: true,
     },
-    // Ganti userId menjadi email agar sesuai dengan input Frontend
     email: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    // Samakan nama ENUM dengan opsi dropdown di Frontend
     role: {
         type: DataTypes.ENUM("viewer", "editor"),
         defaultValue: "viewer",
