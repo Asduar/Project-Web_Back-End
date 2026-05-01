@@ -105,9 +105,6 @@ body, .bg-body-tertiary {
     color: var(--accent-primary) !important;
 }
 
-/* ========================================== */
-/* CUSTOM TOAST NOTIFICATION (Pengganti Alert)*/
-/* ========================================== */
 .memoora-toast {
     position: fixed;
     top: 20px;

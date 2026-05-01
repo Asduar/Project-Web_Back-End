@@ -4,11 +4,11 @@ import folderRoutes from './routes/folderRoutes.js'; //fadil
 import collaborationRoutes from "./routes/collaborationRoutes.js"; //kasih
 import userRoutes from './routes/userRoutes.js'; //yehezkiel
 import db from "./database.js";
-import Note from "./models/Note.js";
-import User from "./models/User.js";
-import tagRoutes from './routes/tagRoutes.js';
-import activityRoutes from './routes/activityRoutes.js';
-import Tag from "./models/Tag.js";
+import Note from "./models/Note.js"; //aulia
+import User from "./models/User.js"; //yehezkiel
+import tagRoutes from './routes/tagRoutes.js'; //aulia
+import activityRoutes from './routes/activityRoutes.js'; //aulia
+import Tag from "./models/Tag.js"; 
 import Activity from "./models/Activity.js";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";

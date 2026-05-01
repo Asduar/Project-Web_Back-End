@@ -52,3 +52,20 @@ export const removeCollaborator = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const updateCollab = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+        
+        const updated = await Collaboration.update(
+            { role: role }, 
+            { where: { id: id } }
+        );
+
+        if (updated[0] === 0) return res.status(404).json({ success: false, message: "Kolaborator tidak ditemukan" });
+        res.status(200).json({ success: true, message: "Role berhasil diubah" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

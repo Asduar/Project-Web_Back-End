@@ -25,9 +25,16 @@ export const getActivities = async (req, res) => {
 export const deleteActivity = async (req, res) => {
     try {
         const { id } = req.params;
-        const deleted = await Activity.destroy({ where: { id: id, userId: req.user.id } });
+        
+        const deleted = await Activity.destroy({ 
+            where: { 
+                id: id, 
+                userId: req.user.id
+            } 
+        });
+
         if (!deleted) return res.status(404).json({ success: false, message: "Aktivitas tidak ditemukan" });
-        res.status(200).json({ success: true, message: "Aktivitas dihapus" });
+        res.status(200).json({ success: true, message: "Aktivitas berhasil dihapus" });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

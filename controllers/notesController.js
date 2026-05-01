@@ -7,7 +7,7 @@ export const getAllNotes = async (req, res) => {
     const search = req.query.search;
     
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 6;
     const offset = (page - 1) * limit;
     
     let condition = { userId: req.user.id }; 
