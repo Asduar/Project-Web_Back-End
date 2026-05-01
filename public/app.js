@@ -9,7 +9,6 @@ if (!token || !user) {
 }
 
 const notesContainer = document.getElementById('notesContainer');
-const addMainBtn = document.getElementById('addNoteBtn');
 const searchInput = document.getElementById('searchInput');
 const statusFilter = document.getElementById('statusFilter');
 
@@ -81,7 +80,7 @@ function setActiveNav(activeElement) {
         if (pagContainer) pagContainer.innerHTML = '';
     }
 
-const statusFilter = document.getElementById('statusFilter');
+    const statusFilter = document.getElementById('statusFilter');
     if (statusFilter) {
         if (currentView === 'notes') {
             statusFilter.classList.remove('d-none');
@@ -93,34 +92,13 @@ const statusFilter = document.getElementById('statusFilter');
     }
 
     const mainAddBtn = document.getElementById('addNoteBtn');
-document.getElementById('addNoteBtn').addEventListener('click', () => {
-    if (currentView === 'notes') {
-        editingNoteId = null;
-        noteForm.reset();
-        document.querySelector('#noteModal h4').textContent = "Buat Catatan Baru";
-        noteModal.style.display = 'flex';
-    } else if (currentView === 'folders') {
-        editingFolderId = null;
-        folderForm.reset();
-        const folderTitle = document.getElementById('folderModalTitle') || document.querySelector('#folderModal h4');
-        if (folderTitle) folderTitle.textContent = "Buat Folder Baru";
-        folderModal.style.display = 'flex';
-    } else if (currentView === 'collabs') {
-        editingCollabId = null;
-        collabForm.reset();
-        document.getElementById('collabEmail').readOnly = false;
-        document.querySelector('#collabModal h4').textContent = "Undang Kolaborator";
-        const submitBtn = document.querySelector('#collabForm button[type="submit"]');
-        if(submitBtn) submitBtn.textContent = "Kirim Undangan";
-        collabModal.style.display = 'flex';
-    } else if (currentView === 'tags') {
-        editingTagId = null;
-        tagForm.reset();
-        document.getElementById('tagModalTitle').textContent = "Buat Tag Baru";
-        tagModal.style.display = 'flex';
+    if (mainAddBtn) {
+        if (currentView === 'notes') { mainAddBtn.textContent = 'Catatan Baru'; mainAddBtn.style.display = 'block'; }
+        else if (currentView === 'folders') { mainAddBtn.textContent = 'Folder Baru'; mainAddBtn.style.display = 'block'; }
+        else if (currentView === 'collabs') { mainAddBtn.textContent = 'Undang Teman'; mainAddBtn.style.display = 'block'; }
+        else if (currentView === 'tags') { mainAddBtn.textContent = 'Tag Baru'; mainAddBtn.style.display = 'block'; }
+        else if (currentView === 'activities') { mainAddBtn.style.display = 'none'; }
     }
-});
-
 }
 
 async function logActivity(actionName, descriptionText) {
@@ -130,92 +108,59 @@ async function logActivity(actionName, descriptionText) {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ action: actionName, description: descriptionText })
         });
-    } catch (error) { console.error("Gagal mencatat aktivitas", error); }
+    } catch (error) { 
+        console.error(error); 
+    }
 }
 
-navNotes.addEventListener('click', () => {
+navNotes.addEventListener('click', (e) => {
+    e.preventDefault();
     currentView = 'notes';
     setActiveNav(navNotes);
-    addMainBtn.textContent = 'Catatan Baru';
-    addMainBtn.style.display = 'block';
     searchInput.placeholder = 'Cari catatan...';
-    statusFilter.style.display = 'block';
     notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat catatan...</div>';
     fetchNotes();
 });
 
-navFolders.addEventListener('click', () => {
+navFolders.addEventListener('click', (e) => {
+    e.preventDefault();
     currentView = 'folders';
     setActiveNav(navFolders);
-    addMainBtn.textContent = 'Folder Baru';
-    addMainBtn.style.display = 'block';
     searchInput.placeholder = 'Cari folder...';
-    statusFilter.style.display = 'none';
     notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat folder...</div>';
     fetchFolders();
 });
 
-navCollabs.addEventListener('click', () => {
+navCollabs.addEventListener('click', (e) => {
+    e.preventDefault();
     currentView = 'collabs';
     setActiveNav(navCollabs);
-    addMainBtn.textContent = 'Undang Teman';
-    addMainBtn.style.display = 'block';
     searchInput.placeholder = 'Cari email...';
-    statusFilter.style.display = 'none';
     notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat kolaborator...</div>';
     fetchCollabs();
 });
 
 if (navTags) {
-    navTags.addEventListener('click', () => {
+    navTags.addEventListener('click', (e) => {
+        e.preventDefault();
         currentView = 'tags';
         setActiveNav(navTags);
-        addMainBtn.textContent = 'Tag Baru';
-        addMainBtn.style.display = 'block'; 
         searchInput.placeholder = 'Cari tag...';
-        statusFilter.style.display = 'none';
         notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat Tags...</div>';
         fetchTags();
     });
 }
 
 if (navActivities) {
-    navActivities.addEventListener('click', () => {
+    navActivities.addEventListener('click', (e) => {
+        e.preventDefault();
         currentView = 'activities';
         setActiveNav(navActivities);
-        addMainBtn.style.display = 'none';
         searchInput.placeholder = 'Cari aktivitas...';
-        statusFilter.style.display = 'none';
         notesContainer.innerHTML = '<div class="col-12 text-center text-secondary mt-5">Memuat Riwayat Aktivitas...</div>';
         fetchActivities();
     });
 }
-
-addMainBtn.addEventListener('click', () => {
-    if (currentView === 'notes') {
-        editingNoteId = null; 
-        noteForm.reset();
-        document.querySelector('#noteModal h4').textContent = "Buat Catatan Baru";
-        noteModal.style.display = 'flex';
-    } else if (currentView === 'folders') {
-        editingFolderId = null;
-        folderForm.reset();
-        document.querySelector('#folderModal h4').textContent = "Buat Folder Baru";
-        folderModal.style.display = 'flex';
-    } else if (currentView === 'collabs') {
-        editingCollabId = null;
-        collabForm.reset();
-        document.getElementById('collabEmail').readOnly = false;
-        document.querySelector('#collabModal h4').textContent = "Undang Kolaborator";
-        collabModal.style.display = 'flex';
-    } else if (currentView === 'tags') {
-    } else if (currentView === 'tags') {
-        editingTagId = null;
-        tagForm.reset();
-        document.getElementById('tagModalTitle').textContent = "Buat Tag Baru";
-        tagModal.style.display = 'flex';
-    }
-});
 
 function jalankanFilter() {
     const kataKunci = searchInput.value.toLowerCase();
@@ -248,7 +193,9 @@ async function fetchFolders() {
             updateFolderDropdown(); 
             if (currentView === 'folders') jalankanFilter();
         }
-    } catch (error) { console.error("Gagal mengambil folder:", error); }
+    } catch (error) { 
+        console.error(error); 
+    }
 }
 
 function updateFolderDropdown() {
@@ -306,7 +253,9 @@ async function fetchNotes(page = 1) {
                 renderPagination();
             }
         }
-    } catch (error) { console.error("Gagal mengambil catatan:", error); }
+    } catch (error) { 
+        console.error(error); 
+    }
 }
 
 function renderPagination() {
@@ -327,17 +276,8 @@ function renderPagination() {
 
 function renderNotesTemplate(data) {
     if (currentView !== 'notes') return;
-    
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    const userName = storedUser ? storedUser.username : 'Bos';
 
-    notesContainer.innerHTML = `
-        <div class="col-12 mb-4 animate__animated animate__fadeInDown">
-            <h3 class="text-light fw-bold">Halo, <span class="text-gold">${userName}</span>!</h3>
-            <p class="text-secondary">Berikut adalah ringkasan Memoora kamu hari ini.</p>
-            <hr class="border-secondary">
-        </div>
-    `;
+    notesContainer.innerHTML = '';
 
     if (data.length === 0) {
         notesContainer.innerHTML += `<div class="col-12 text-center text-secondary py-5">Belum ada catatan...</div>`;
@@ -404,7 +344,9 @@ async function fetchCollabs() {
             allCollabs = result.data;
             if (currentView === 'collabs') jalankanFilter(); 
         }
-    } catch (error) { console.warn("Peringatan: API Collabs belum siap."); }
+    } catch (error) { 
+        console.warn(error); 
+    }
 }
 
 function renderCollabsTemplate(collabs) {
@@ -443,8 +385,11 @@ async function fetchTags() {
             updateTagDropdown();
             if(currentView === 'tags') renderTags(allTags); 
         }
-    } catch (error) { console.error("Gagal load tags", error); }
+    } catch (error) { 
+        console.error(error); 
+    }
 }
+
 function updateTagDropdown() {
     const noteTagDropdown = document.getElementById('noteTag');
     if (!noteTagDropdown) return;
@@ -484,7 +429,9 @@ async function fetchActivities() {
             allActivities = result.data; 
             if(currentView === 'activities') renderActivities(allActivities); 
         }
-    } catch (error) { console.error("Gagal load aktivitas", error); }
+    } catch (error) { 
+        console.error(error); 
+    }
 }
 
 function renderActivities(activities) {
@@ -522,7 +469,9 @@ noteForm.addEventListener('submit', async (e) => {
         
         noteModal.style.display = 'none'; noteForm.reset(); editingNoteId = null; fetchNotes(); showToast("Catatan tersimpan!");
         logActivity(isEditing ? 'Update Catatan' : 'Buat Catatan', `Judul: ${data.title}`);
-    } catch (error) { console.error("Error:", error); }
+    } catch (error) { 
+        console.error(error); 
+    }
 });
 
 folderForm.addEventListener('submit', async (e) => {
@@ -536,7 +485,9 @@ folderForm.addEventListener('submit', async (e) => {
         
         folderModal.style.display = 'none'; folderForm.reset(); editingFolderId = null; fetchFolders(); fetchNotes(); showToast("Folder tersimpan!");
         logActivity(isEditing ? 'Update Folder' : 'Buat Folder', `Nama Folder: ${name}`); 
-    } catch (error) { console.error("Error folder:", error); }
+    } catch (error) { 
+        console.error(error); 
+    }
 });
 
 collabForm.addEventListener('submit', async (e) => {
@@ -553,8 +504,12 @@ collabForm.addEventListener('submit', async (e) => {
             showToast(isEditing ? "Role berhasil diperbarui!" : "Berhasil mengundang kolaborator!", "success");
             collabModal.style.display = 'none'; collabForm.reset(); document.getElementById('collabEmail').readOnly = false; editingCollabId = null; fetchCollabs(); 
             logActivity(isEditing ? 'Update Kolaborator' : 'Undang Kolaborator', `Akses untuk: ${data.email} (${data.role})`);
-        } else { showToast(result.message, "error"); }
-    } catch (error) { showToast("Terjadi kesalahan koneksi ke server.", "error"); }
+        } else { 
+            showToast(result.message, "error"); 
+        }
+    } catch (error) { 
+        showToast("Terjadi kesalahan koneksi ke server.", "error"); 
+    }
 });
 
 if(tagForm) {
@@ -568,7 +523,9 @@ if(tagForm) {
             await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data) });
             tagModal.style.display = 'none'; tagForm.reset(); fetchTags(); showToast("Tag berhasil disimpan!", "success");
             logActivity(isEditing ? 'Update Tag' : 'Buat Tag', `Nama Tag: ${data.name}`);
-        } catch (error) { showToast("Gagal menyimpan tag", "error"); }
+        } catch (error) { 
+            showToast("Gagal menyimpan tag", "error"); 
+        }
     });
 }
 
@@ -577,11 +534,11 @@ cancelFolderBtn.addEventListener('click', () => { folderModal.style.display = 'n
 cancelCollabBtn.addEventListener('click', () => { collabModal.style.display = 'none'; collabForm.reset(); document.getElementById('collabEmail').readOnly = false; editingCollabId = null; });
 if(cancelTagBtn) cancelTagBtn.addEventListener('click', () => { tagModal.style.display = 'none'; tagForm.reset(); });
 
-
 notesContainer.addEventListener('click', async (e) => {
     if (e.target.classList.contains('delete-btn')) {
         if (confirm("Hapus catatan ini?")) { 
-            await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); fetchNotes(); 
+            await fetch(`/api/notes/${e.target.getAttribute('data-id')}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); 
+            fetchNotes(); 
             logActivity('Hapus Catatan', 'Sebuah catatan telah dihapus');
         }
     }
@@ -592,18 +549,31 @@ notesContainer.addEventListener('click', async (e) => {
         logActivity('Ubah Status Catatan', `Status diubah menjadi: ${statusBaru}`);
     }
     if (e.target.classList.contains('edit-note-btn')) {
-        editingNoteId = e.target.getAttribute('data-id'); document.getElementById('noteTitle').value = e.target.getAttribute('data-title'); document.getElementById('noteDesc').value = e.target.getAttribute('data-desc'); document.getElementById('noteDate').value = e.target.getAttribute('data-date'); document.getElementById('noteTag').value = e.target.getAttribute('data-tag'); document.getElementById('noteFolder').value = e.target.getAttribute('data-folder'); document.querySelector('#noteModal h4').textContent = "Edit Catatan"; noteModal.style.display = 'flex';
+        editingNoteId = e.target.getAttribute('data-id'); 
+        document.getElementById('noteTitle').value = e.target.getAttribute('data-title'); 
+        document.getElementById('noteDesc').value = e.target.getAttribute('data-desc'); 
+        document.getElementById('noteDate').value = e.target.getAttribute('data-date'); 
+        document.getElementById('noteTag').value = e.target.getAttribute('data-tag'); 
+        document.getElementById('noteFolder').value = e.target.getAttribute('data-folder'); 
+        document.querySelector('#noteModal h4').textContent = "Edit Catatan"; 
+        noteModal.style.display = 'flex';
     }
 
     if (e.target.classList.contains('delete-folder-btn')) {
         if (confirm("Hapus folder ini?")) {
             await fetch(`/api/folders/${e.target.getAttribute('data-id')}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); 
-            fetchFolders(); fetchNotes(); showToast('Folder berhasil dihapus', 'success');
+            fetchFolders(); 
+            fetchNotes(); 
+            showToast('Folder berhasil dihapus', 'success');
             logActivity('Hapus Folder', 'Sebuah folder dihapus');
         }
     }
     if (e.target.classList.contains('edit-folder-btn')) {
-        editingFolderId = e.target.getAttribute('data-id'); document.getElementById('folderName').value = e.target.getAttribute('data-name'); const folderTitle = document.getElementById('folderModalTitle') || document.querySelector('#folderModal h4'); if (folderTitle) folderTitle.textContent = "Edit Folder"; folderModal.style.display = 'flex';
+        editingFolderId = e.target.getAttribute('data-id'); 
+        document.getElementById('folderName').value = e.target.getAttribute('data-name'); 
+        const folderTitle = document.getElementById('folderModalTitle') || document.querySelector('#folderModal h4'); 
+        if (folderTitle) folderTitle.textContent = "Edit Folder"; 
+        folderModal.style.display = 'flex';
     }
     
     if (e.target.classList.contains('edit-collab-btn')) {
@@ -624,18 +594,24 @@ notesContainer.addEventListener('click', async (e) => {
     }
     if (e.target.classList.contains('delete-collab-btn')) {
         if (confirm("Cabut akses kolaborator ini?")) { 
-            await fetch(`/api/collabs/${e.target.getAttribute('data-id')}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); fetchCollabs(); 
+            await fetch(`/api/collabs/${e.target.getAttribute('data-id')}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); 
+            fetchCollabs(); 
             logActivity('Cabut Akses', 'Akses kolaborator dicabut'); 
         }
     }
     if (e.target.classList.contains('delete-tag-btn')) {
         if (confirm("Yakin ingin menghapus Tag ini?")) { 
-            await fetch(`/api/tags/${e.target.getAttribute('data-id')}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); fetchTags(); 
+            await fetch(`/api/tags/${e.target.getAttribute('data-id')}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }); 
+            fetchTags(); 
             logActivity('Hapus Tag', 'Sebuah tag dihapus');
         }
     }
     if (e.target.classList.contains('edit-tag-btn')) {
-        editingTagId = e.target.getAttribute('data-id'); document.getElementById('tagName').value = e.target.getAttribute('data-name'); document.getElementById('tagColor').value = e.target.getAttribute('data-color'); document.getElementById('tagModalTitle').textContent = "Edit Tag"; tagModal.style.display = 'flex';
+        editingTagId = e.target.getAttribute('data-id'); 
+        document.getElementById('tagName').value = e.target.getAttribute('data-name'); 
+        document.getElementById('tagColor').value = e.target.getAttribute('data-color'); 
+        document.getElementById('tagModalTitle').textContent = "Edit Tag"; 
+        tagModal.style.display = 'flex';
     }
 
     if (e.target.classList.contains('delete-activity-btn')) {
@@ -660,14 +636,30 @@ function showCustomConfirm(title, text, requireInput = false) {
         const inputField = document.getElementById('confirmInput');
         document.getElementById('confirmTitle').textContent = title;
         document.getElementById('confirmText').textContent = text;
-        if(requireInput) { inputField.style.display = 'block'; inputField.value = ''; } else { inputField.style.display = 'none'; }
+        if(requireInput) { 
+            inputField.style.display = 'block'; 
+            inputField.value = ''; 
+        } else { 
+            inputField.style.display = 'none'; 
+        }
         modal.style.display = 'flex';
         document.getElementById('btnConfirmOk').onclick = () => {
             if(requireInput) {
-                if(inputField.value === 'HAPUS') { modal.style.display = 'none'; resolve(true); } else { showToast('Gagal: Anda harus mengetik HAPUS huruf besar semua!', 'error'); }
-            } else { modal.style.display = 'none'; resolve(true); }
+                if(inputField.value === 'HAPUS') { 
+                    modal.style.display = 'none'; 
+                    resolve(true); 
+                } else { 
+                    showToast('Gagal: Anda harus mengetik HAPUS huruf besar semua!', 'error'); 
+                }
+            } else { 
+                modal.style.display = 'none'; 
+                resolve(true); 
+            }
         };
-        document.getElementById('btnConfirmCancel').onclick = () => { modal.style.display = 'none'; resolve(false); };
+        document.getElementById('btnConfirmCancel').onclick = () => { 
+            modal.style.display = 'none'; 
+            resolve(false); 
+        };
     });
 }
 
@@ -689,25 +681,44 @@ if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', () => settingsM
 if (settingsForm) {
     settingsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const newUsername = document.getElementById('editUsername').value;
+        const newEmail = document.getElementById('editEmail').value;
         try {
             const response = await fetch('/api/users/profile', {
                 method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ id: user.id, username: document.getElementById('editUsername').value, email: document.getElementById('editEmail').value, password: document.getElementById('editPassword').value })
+                body: JSON.stringify({ id: user.id, username: newUsername, email: newEmail, password: document.getElementById('editPassword').value })
             });
             const result = await response.json();
             if (result.success) {
-                showToast("Profil diperbarui! Silakan login kembali.", "success");
-                setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1500);
-            } else { showToast(result.message, "error"); }
-        } catch (error) { showToast("Terjadi kesalahan server saat update.", "error"); }
+                showToast("Profil berhasil diperbarui!", "success");
+                
+                const updatedUser = { ...user, username: newUsername, email: newEmail };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                
+                document.getElementById('topbarName').textContent = newUsername;
+                const initials = newUsername.charAt(0).toUpperCase();
+                document.getElementById('userAvatar').textContent = initials;
+
+                setTimeout(() => { 
+                    settingsModal.style.display = 'none';
+                }, 1500);
+            } else { 
+                showToast(result.message, "error"); 
+            }
+        } catch (error) { 
+            showToast("Terjadi kesalahan server saat update.", "error"); 
+        }
     });
 }
 
 document.getElementById('logoutSettingsBtn').addEventListener('click', async () => {
     settingsModal.style.display = 'none'; 
     if (await showCustomConfirm('Logout', 'Yakin ingin keluar dari sesi Memoora saat ini?')) {
-        localStorage.clear(); window.location.href = 'login.html';
-    } else { settingsModal.style.display = 'flex'; }
+        localStorage.clear(); 
+        window.location.href = 'login.html';
+    } else { 
+        settingsModal.style.display = 'flex'; 
+    }
 });
 
 document.getElementById('deleteAccountSettingsBtn').addEventListener('click', async () => {
@@ -717,13 +728,23 @@ document.getElementById('deleteAccountSettingsBtn').addEventListener('click', as
             try {
                 const response = await fetch(`/api/users/${user.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                 const result = await response.json();
-                if (result.success) { showToast("Akun berhasil dimusnahkan. Selamat tinggal!", "success"); setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1500); }
-            } catch (error) { showToast("Gagal menghapus akun karena masalah server.", "error"); }
-        } else { settingsModal.style.display = 'flex'; }
-    } else { settingsModal.style.display = 'flex'; }
+                if (result.success) { 
+                    showToast("Akun berhasil dimusnahkan. Selamat tinggal!", "success"); 
+                    setTimeout(() => { localStorage.clear(); window.location.href = 'login.html'; }, 1500); 
+                }
+            } catch (error) { 
+                showToast("Gagal menghapus akun karena masalah server.", "error"); 
+            }
+        } else { 
+            settingsModal.style.display = 'flex'; 
+        }
+    } else { 
+        settingsModal.style.display = 'flex'; 
+    }
 });
 
 async function startApp() {
+    setActiveNav(navNotes)
     await fetchFolders(); 
     await fetchNotes();   
     await fetchCollabs();
@@ -734,5 +755,42 @@ document.getElementById('menu-toggle').addEventListener('click', function(e) {
     e.preventDefault();
     document.getElementById('wrapper').classList.toggle('toggled');
 });
+
+const currentUser = JSON.parse(localStorage.getItem('user'));
+if (currentUser) {
+    const topbarNameEl = document.getElementById('topbarName');
+    if (topbarNameEl) topbarNameEl.textContent = currentUser.username;
+}
+
+const globalAddBtn = document.getElementById('addNoteBtn');
+if (globalAddBtn) {
+    globalAddBtn.addEventListener('click', () => {
+        if (currentView === 'notes') {
+            editingNoteId = null;
+            noteForm.reset();
+            document.querySelector('#noteModal h4').textContent = "Buat Catatan Baru";
+            noteModal.style.display = 'flex';
+        } else if (currentView === 'folders') {
+            editingFolderId = null;
+            folderForm.reset();
+            const folderTitle = document.getElementById('folderModalTitle') || document.querySelector('#folderModal h4');
+            if (folderTitle) folderTitle.textContent = "Buat Folder Baru";
+            folderModal.style.display = 'flex';
+        } else if (currentView === 'collabs') {
+            editingCollabId = null;
+            collabForm.reset();
+            document.getElementById('collabEmail').readOnly = false;
+            document.querySelector('#collabModal h4').textContent = "Undang Kolaborator";
+            const submitBtn = document.querySelector('#collabForm button[type="submit"]');
+            if(submitBtn) submitBtn.textContent = "Kirim Undangan";
+            collabModal.style.display = 'flex';
+        } else if (currentView === 'tags') {
+            editingTagId = null;
+            tagForm.reset();
+            document.getElementById('tagModalTitle').textContent = "Buat Tag Baru";
+            tagModal.style.display = 'flex';
+        }
+    });
+}
 
 startApp();
