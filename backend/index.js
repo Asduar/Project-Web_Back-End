@@ -1,9 +1,12 @@
 import express from "express";
+import dotenv from "dotenv";
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from "cors";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+
+dotenv.config();
 
 import noteRoutes from './routes/notesRoutes.js';
 import folderRoutes from './routes/folderRoutes.js';

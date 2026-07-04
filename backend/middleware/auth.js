@@ -1,7 +1,5 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = "process.env.JWT_SECRET"; 
-
 export const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -10,7 +8,7 @@ export const verifyToken = (req, res, next) => {
         return res.status(401).json({ success: false, message: "Akses ditolak. Silakan login kembali." });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             return res.status(403).json({ success: false, message: "Token tidak valid atau kadaluarsa." });
         }
